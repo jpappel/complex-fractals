@@ -1,0 +1,23 @@
+# Final Presentation Notes
+
+## Outline
+
+* definition of complex numbers
+* definition of mandelbrot set
+    * examples of fractals (Romanesco, Sripenski triangle, Menger sponge)
+* question: how do we handle recursion in computer science
+    * we avoid it!
+* serial algorithm for computing Mandelbrot set
+    * runtime
+    * animation where the number of frames are dependent on runtime:w
+* shared algorithm for computing mandelbrot set
+    * runtime
+    * unique challenges of the shared version
+    * benefits gained from the shared version
+    * animation where the number of frames are dependent on runtime:w
+* gpu algorithm for computing mandelbrot set
+    * runtime
+    * unique challenges of the gpu version
+    * benefits gained from the gpu version
+    * animation where the number of frames are dependent on runtime:w
+* overall comparison of implementations
