@@ -20,12 +20,12 @@ typedef struct {
 typedef char gradient;
 
 // for AoS
-color get_color(size_t iterations, size_t max_iterations, gradient map);
+color get_color(const size_t iterations, const size_t max_iterations, const gradient map);
 
 // for SoA
-char get_red(size_t iterations, size_t max_iterations, gradient map);
-char get_green(size_t iterations, size_t max_iterations, gradient map);
-char get_blue(size_t iterations, size_t max_iterations, gradient map);
+char get_red(const size_t iterations, const size_t max_iterations, const gradient map);
+char get_green(const size_t iterations, const size_t max_iterations, const gradient map);
+char get_blue(const size_t iterations, const size_t max_iterations, const gradient map);
 colors_t* create_colors(size_t x, size_t y);
-colors_t* copy_colors(colors_t* colors);
+colors_t* copy_colors(const colors_t* colors);
 void free_colors(colors_t* colors);
