@@ -1,12 +1,26 @@
-CC :=
+CC := gcc-13
 CPPFLAGS :=
+CFLAGS := -Wall
 LDFLAGS :=
 
-all:
+all: 
 
 ##############
 #  Programs  #
 ##############
+
+SRCS := mandelbrot.c plotting.c
+OBJS := $(SRC:.c=.o)
+OBJS_DIR := build/objs
+
+build/mandelbrot: $(addprefix $(OBJS_DIR)/, $(OBJS))
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+$(OBJS_DIR)/%.o: src/%.c $(OBJS_DIR)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+$(OBJS_DIR):
+	mkdir -p $@
 
 ################
 #  Animations  #
