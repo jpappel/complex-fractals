@@ -45,6 +45,23 @@ size_t multibrot(const double complex z0, const size_t max_iterations, const uin
 }
 
 /*
+ * Computes ????? for a julia set
+ * implementation of https://en.wikipedia.org/wiki/Julia_set#Pseudocode
+ */
+size_t julia(const double R, const double complex z0, const double complex c, const size_t max_iterations){
+    //FIXME: I'm notsure if this is currently implemented correctly
+    if(R*R - R >= cabs(z0)) return 0;
+    double complex z = z0;
+
+    size_t iteration = 0;
+    while(cabs(z) < R && iteration < max_iterations){
+        z = z * z + c;
+        iteration++;
+    }
+    return iteration;
+}
+
+/*
  * Converts a grid point into an complex number
  */
 double complex lattice_to_complex(const size_t index, const size_t x_res, const size_t y_res) {
