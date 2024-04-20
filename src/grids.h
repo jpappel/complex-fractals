@@ -1,7 +1,7 @@
+#pragma once
+
 #include <stddef.h>
 #include <stdbool.h>
-
-#pragma once
 
 typedef struct {
     size_t x;
