@@ -1,4 +1,6 @@
 #include "fractals.h"
+#include "grids.h"
+#include "util.h"
 /*
  * Computes the number of iterations it takes for a point z0 to diverge
  * if the return value is equal to max_iterations, the point lies within the mandelbrot set
@@ -13,6 +15,22 @@ size_t mandelbrot(const double complex z0, const size_t max_iterations) {
     iteration++;
   }
   return iteration;
+}
+
+/*
+ * Fills a grid with the a complex sit
+ */
+void mandelbrot_grid(grid_t* grid, vec2 resolution, const size_t iterations){
+    if(!grid || !grid->data) return;
+    const size_t size = grid->size;
+
+    set_grid(grid, 0); //unnecessary step
+
+
+    size_t* data = grid->data;
+    for(size_t i = 0; i < size; i++){
+        data[i] = mandelbrot(lattice_to_complex(i, resolution), iterations);
+    }
 }
 
 /*
