@@ -4,6 +4,9 @@ LDFLAGS :=
 
 all:
 
+##############
+#  Programs  #
+##############
 
 ################
 #  Animations  #
@@ -18,7 +21,15 @@ presentation: presentation/presentation.html
 presentation/presentation.html: presentation/presentation.md
 	pandoc -t revealjs -so $@ $<
 
-clean:
-	rm -rf presentation/presentation.html
+##############
+#  Analysis  #
+##############
 
-.PHONY: all presentation clean
+analysis: analysis/analysis.html
+
+analysis/analysis.html: analysis/analysis.Rmd # TODO: add compile command
+
+clean:
+	rm -rf presentation/presentation.html analysis/analysis.html
+
+.PHONY: all presentation analysis clean
