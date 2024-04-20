@@ -1,31 +1,36 @@
-# HPC Mandelbrot, Julia and Multibot Sets
+---
+title: "HPC Mandelbrot, Julia, and Multibot Sets"
+author:
+- "JP Appel"
+- "David Marrero"
+---
 
 ![Mandelbrot Set]()
 
-## Perquisite Knowledge
+# Prerequisite Knowledge
 
-### Complex Numbers
+## Complex Numbers
 
-### What is the Mandelbrot Set
+## What is the Mandelbrot Set
 
-### Fractals
+## Fractals
 
-### Handling Recursion
+## Handling Recursion
 
-## Implementations
+# Implementations
 
-### Serial
+## Serial
 
-### Serial Animation
+## Serial Animation
 
-### Shared
+## Shared
 
-### Shared Animation
+## Shared Animation
 
-### GPU
+## GPU
 
-### GPU Animation
+## GPU Animation
 
-## Analysis
+# Analysis
 
-### Speedups
+## Speedups

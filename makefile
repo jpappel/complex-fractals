@@ -4,7 +4,21 @@ LDFLAGS :=
 
 all:
 
-clean:
-	rm -rf
 
-.PHONY: all clean
+################
+#  Animations  #
+################
+
+##################
+#  Presentation  #
+##################
+
+presentation: presentation/presentation.html
+
+presentation/presentation.html: presentation/presentation.md
+	pandoc -t revealjs -so $@ $<
+
+clean:
+	rm -rf presentation/presentation.html
+
+.PHONY: all presentation clean
