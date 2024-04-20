@@ -3,23 +3,30 @@ CPPFLAGS :=
 CFLAGS := -Wall
 LDFLAGS :=
 
-all: 
+SRC_DIR := src
+BUILD_DIR := build
+OBJ_DIR := $(BUILD_DIR)/objects
+
+TARGET := serial-fractal
+SRCS := $(wildcard $(SRC_DIR)/*.c)
+OBJS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
+
+
+.PHONY: all presentation analysis clean test
+
+all: $(BUILD_DIR)/$(TARGET)
 
 ##############
 #  Programs  #
 ##############
 
-SRCS := mandelbrot.c plotting.c
-OBJS := $(SRC:.c=.o)
-OBJS_DIR := build/objs
-
-build/mandelbrot: $(addprefix $(OBJS_DIR)/, $(OBJS))
+build/mandelbrot: $(OBJ_DIR)/serial-fractal.o $(OBJ_DIR)/grids.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-$(OBJS_DIR)/%.o: src/%.c $(OBJS_DIR)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c  | $(OBJ_DIR)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
-$(OBJS_DIR):
+$(OBJ_DIR):
 	mkdir -p $@
 
 ################
@@ -44,6 +51,4 @@ analysis: analysis/analysis.html
 analysis/analysis.html: analysis/analysis.Rmd # TODO: add compile command
 
 clean:
-	rm -rf presentation/presentation.html analysis/analysis.html
-
-.PHONY: all presentation analysis clean
+	rm -rf presentation/presentation.html analysis/analysis.html $(OBJS)
