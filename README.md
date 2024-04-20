@@ -2,9 +2,23 @@
 
 Final Project for Moravian University CSCI 392: High Performance Computing.
 
-## Building
+## Program
 
-## Running
+### Building
+
+### Running
+
+## Animations
+
+## Presentation
+
+Building the presentation requires a [pandoc](https://pandoc.org/) installation.
+
+To build the presentation run
+
+```bash
+make presentation
+```
 
 ## Resources
 
