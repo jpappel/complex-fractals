@@ -58,12 +58,14 @@ colors_t* create_colors(const size_t x, const size_t y){
         return NULL;
     }
 
-    colors->x = x;
-    colors->y = y;
-    colors->size = x*y;
-    colors->red = red;
-    colors->green = green;
-    colors->blue = blue;
+    *colors = (colors_t){
+        .x = x,
+        .y = y,
+        .size = x*y,
+        .red = red,
+        .green = green,
+        .blue = blue
+    };
 
     return colors;
 }
