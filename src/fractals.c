@@ -9,7 +9,6 @@
 #include "fractals.h"
 
 
-
 int main(const int argc, char *argv[]) {
     //default values
     size_t iterations = 1000;
@@ -36,14 +35,16 @@ int main(const int argc, char *argv[]) {
     }
 
 
-    grid_t* grid = create_grid(x_res, y_res);
+    const double complex lower_left = -2 + -2*I;
+    const double complex upper_right = 2 + 2*I;
+    grid_t* grid = create_grid(x_res, y_res, lower_left, upper_right);
     if(!grid) return 1;
 
 
     const size_t size = grid->size;
     size_t* data = grid->data;
     for(size_t i = 0; i < size;i++){
-        data[i] = multibrot(lattice_to_complex(i, x_res, y_res), iterations, 3);
+        data[i] = multibrot(grid_to_complex(grid, i), iterations, 3);
     }
 
     for(size_t i = 0; i < size; i++){
