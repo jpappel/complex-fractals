@@ -9,27 +9,6 @@
 #include "fractals.h"
 
 
-/*
- * Converts a grid point into an complex number
- */
-double complex lattice_to_complex(const size_t index, const size_t x_res, const size_t y_res) {
-    const double x_min = -2.0;
-    const double x_max = 2.0;
-    const double y_min = -2.0;
-    const double y_max = 2.0;
-
-    const double x_step = (x_max - x_min) / (double)x_res;
-    const double y_step = (y_max - y_min) / (double)y_res;
-
-    const size_t x_index = index % x_res;
-    const size_t y_index = index / x_res;
-
-    const double x = x_min + x_index * x_step;
-    const double y = y_min + y_index * y_step;
-
-    return x + y * I;
-}
-
 
 int main(const int argc, char *argv[]) {
     //default values
