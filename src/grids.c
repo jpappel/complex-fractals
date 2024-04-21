@@ -155,9 +155,12 @@ int write_grid(FILE* restrict file, const grid_t *grid){
     }
 
     unsigned char magic_num[3];
-    for(size_t i = 0; i < 3; i++){
-        magic_num[i] = (GRID_MAGIC_NUMBER >> (2*i)) & 0xFF;
-    }
+    magic_num[0] = 0xA6;
+    magic_num[1] = 0x00;
+    magic_num[2] = 0x5E;
+    // for(size_t i = 0; i < 3; i++){
+    //     magic_num[i] = (GRID_MAGIC_NUMBER >> (2*i)) & 0xFF;
+    // }
 
     if(fwrite(magic_num, 1, 3, file) != 3) return GRID_WRITE_ERROR;
 
@@ -238,7 +241,7 @@ void print_grid(const grid_t* grid, const size_t iterations){
  * Creates a grid from a .grid file, reading the amount of data as specified by the file
  * For more details on the .grid format see write_grid
  *
- * Ignores remainder of file if it has finished reading but is not at the end ofthe file
+ * Ignores remainder of file if it has finished reading but is not at the end of the file
  */
 grid_t* read_grid(FILE* restrict file){
     // Make sure the file has a magic goose (GRID_MAGIC_NUMBER)
@@ -249,12 +252,9 @@ grid_t* read_grid(FILE* restrict file){
         perror("Error reading file\n");
         return NULL;
     }
-    for(size_t i = 0; i < 3; i++){
-        unsigned char magic_byte = (GRID_MAGIC_NUMBER >> (2*i)) & 0xFF;
-        if(magic_byte != magic_num[i]){
-            fprintf(stderr, "Error reading file, can't find magic %d\n", GRID_MAGIC_NUMBER);
-            return NULL;
-        }
+    if(magic_num[0] != 0xA6 || magic_num[1] != 0x00 || magic_num[2] != 0x5E){
+        fprintf(stderr, "Error reading file, can't find magic number 0xA6005E\n");
+        return NULL;
     }
 
     size_t x = 0;
@@ -295,10 +295,6 @@ grid_t* read_grid(FILE* restrict file){
         fprintf(stderr, "Error reading file, expected %zu grid points but only found %zu\n", grid->size, read_count);
         free_grid(grid);
         return NULL;
-    }
-
-    if(!feof(file)){
-        fprintf(stderr, "Finished reading %zu grid points but not at the end of the file\n", read_count);
     }
 
     return grid;
