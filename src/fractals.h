@@ -11,4 +11,5 @@ void mandelbrot_grid(grid_t* grid,  const size_t max_iterations);
 size_t multibrot(const long double complex z0, const size_t max_iterations, const double d);
 void multibrot_grid(grid_t* grid, const size_t max_iterations, const double d);
 
-size_t julia(const double R, const long double complex z0, const long double complex c, const size_t max_iterations);
+size_t julia(const long double complex z0, const long double complex c, const size_t max_iterations, const double R);
+void julia_grid(grid_t* grid, const size_t max_iterations, const long double complex c, const double R);

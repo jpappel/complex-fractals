@@ -60,3 +60,30 @@ void multibrot_grid(grid_t* grid, const size_t max_iterations, const double d){
         data[i] = multibrot(grid_to_complex(grid, i), max_iterations, d);
     }
 }
+
+/*
+ * Computes ????? for a julia set
+ * implementation of https://en.wikipedia.org/wiki/Julia_set#Pseudocode
+ *
+ * This behaves weirdly, needs a very small number of iterations to be visibile
+ */
+
+size_t julia(const long double complex z0, const long double complex c, const size_t max_iterations, const double R){
+    long double complex z = z0;
+
+    size_t iteration = 0;
+    while(cabsl(z) < R && iteration < max_iterations){
+        z = z * z + c;
+        iteration++;
+    }
+    return iteration;
+}
+
+void julia_grid(grid_t* grid, const size_t max_iterations, const long double complex c, const double R){
+    const size_t size = grid->size;
+    size_t* data = grid->data;
+    #pragma omp parallel for default(none) shared(data, size, grid, max_iterations, c, R) schedule(dynamic)
+    for(size_t i = 0; i <size; i++){
+        data[i] = julia(grid_to_complex(grid, i), c, max_iterations, R);
+    }
+}

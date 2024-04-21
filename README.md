@@ -27,6 +27,7 @@ make presentation
 * [Various Algorithms for Plotting the Mandelbrot Set](https://en.wikipedia.org/wiki/Plotting_algorithms_for_the_Mandelbrot_set)
 * [Pseudocode for Julia Set](https://en.wikipedia.org/wiki/Julia_set#Pseudocode)
 * [Another HPC implemenation of Mandelbrot set rendering](https://github.com/OakenKnight/MandelbrotSet-HightPerformance-Implementation)
+* [Blog Post on CUDA Mandelbrot Set](https://developershell.net/the-mandelbrot-set-with-cuda/)
 
 ## Contributors
 

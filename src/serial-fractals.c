@@ -59,10 +59,10 @@ void multibrot_grid(grid_t* grid, const size_t max_iterations, const double d){
 /*
  * Computes ????? for a julia set
  * implementation of https://en.wikipedia.org/wiki/Julia_set#Pseudocode
+ *
+ * This behaves weirdly, needs a very small number of iterations to be visibile
  */
-size_t julia(const double R, const long double complex z0, const long double complex c, const size_t max_iterations){
-    //FIXME: I'm notsure if this is currently implemented correctly
-    if(R*R - R >= cabsl(z0)) return 0;
+size_t julia(const long double complex z0, const long double complex c, const size_t max_iterations, const double R){
     long double complex z = z0;
 
     size_t iteration = 0;
@@ -73,3 +73,10 @@ size_t julia(const double R, const long double complex z0, const long double com
     return iteration;
 }
 
+void julia_grid(grid_t* grid, const size_t max_iterations, const long double complex c, const double R){
+    const size_t size = grid->size;
+    size_t* data = grid->data;
+    for(size_t i = 0; i <size; i++){
+        data[i] = julia(grid_to_complex(grid, i), c, max_iterations, R);
+    }
+}

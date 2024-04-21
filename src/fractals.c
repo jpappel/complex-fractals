@@ -1,6 +1,3 @@
-#include <complex.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -71,8 +68,23 @@ int main(const int argc, char *argv[]) {
     }
 
 
-    mandelbrot_grid(grid, iterations);
+    //const long double complex c = 0.285L + 0.01L*I;
+    const long double complex c = -0.835L -0.321L* I;
+    const double R = 100;
+    julia_grid(grid, iterations, c, R);
 
     if(verbose)print_grid_info(grid);
     print_grid(grid, iterations);
+
+    // //write grid to file
+    // FILE* write_file = fopen("test.grid", "wb");
+    // write_grid(write_file , grid);
+    // fclose(write_file);
+    //
+    // //attempt to read grid from file
+    // FILE* read_file = fopen("test2.grid", "rb");
+    // grid_t* grid2 = read_grid(read_file);
+    // fclose(read_file);
+    //
+    // printf("Grids are %s equal\n", grid_equal(grid, grid2) ? "exactly" :"not exactly");
 }
