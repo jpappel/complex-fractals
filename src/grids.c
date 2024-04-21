@@ -7,7 +7,7 @@
 /*
  * Creates a grid for storing the results of the escape algorithm
  */
-grid_t* create_grid(const size_t x, const size_t y, double complex lower_left, double complex upper_right){
+grid_t* create_grid(const size_t x, const size_t y, long double complex lower_left, long double complex upper_right){
     if(x <= 0 || y <= 0) return NULL;
 
     const size_t size = x * y;
@@ -101,22 +101,22 @@ bool grid_allclose(const grid_t *grid1, const grid_t *grid2, const size_t max_er
 /*
  * Converts a grid point into the corresponding complex number
  */
-double complex grid_to_complex(const grid_t* grid, const size_t index) {
+long double complex grid_to_complex(const grid_t* grid, const size_t index) {
     const size_t x_res = grid->x;
     const size_t y_res = grid->y;
-    const double x_min = creal(grid->lower_left);
-    const double x_max = creal(grid->upper_right);
-    const double y_min = cimag(grid->lower_left);
-    const double y_max = cimag(grid->upper_right);
+    const long double x_min = creal(grid->lower_left);
+    const long double x_max = creal(grid->upper_right);
+    const long double y_min = cimag(grid->lower_left);
+    const long double y_max = cimag(grid->upper_right);
 
-    const double x_step = (x_max - x_min) / (double)x_res;
-    const double y_step = (y_max - y_min) / (double)y_res;
+    const long double x_step = (x_max - x_min) / (double)x_res;
+    const long double y_step = (y_max - y_min) / (double)y_res;
 
     const size_t x_index = index % x_res;
     const size_t y_index = index / y_res;
 
-    const double x = x_min + x_index * x_step;
-    const double y = y_min + y_index * y_step;
+    const long double x = x_min + x_index * x_step;
+    const long double y = y_min + y_index * y_step;
 
     return x + y * I;
 }
@@ -128,11 +128,11 @@ double complex grid_to_complex(const grid_t* grid, const size_t index) {
  */
 void zoom_grid(grid_t* grid, const double magnification){
     set_grid(grid, 0);
-    const double complex upper_right = grid->upper_right;
-    const double complex lower_left = grid->lower_left;
+    const long double complex upper_right = grid->upper_right;
+    const long double complex lower_left = grid->lower_left;
 
-    const double complex center = (lower_left + upper_right) / 2.0;
-    const double complex offset = (upper_right - lower_left) / magnification;
+    const long double complex center = (lower_left + upper_right) / 2.0;
+    const long double complex offset = (upper_right - lower_left) / magnification;
 
     grid->lower_left = center - offset;
     grid->upper_right = center + offset;
@@ -163,8 +163,8 @@ int write_grid(FILE* restrict file, const grid_t *grid){
 
     if(fwrite(&grid->x, sizeof(size_t), 1, file) != 1 ||
        fwrite(&grid->y, sizeof(size_t), 1, file) != 1 ||
-       fwrite(&grid->lower_left, sizeof(double complex), 1, file) != 1 ||
-       fwrite(&grid->upper_right, sizeof(double complex), 1, file) != 1){
+       fwrite(&grid->lower_left, sizeof(long double complex), 1, file) != 1 ||
+       fwrite(&grid->upper_right, sizeof(long double complex), 1, file) != 1){
         return GRID_WRITE_ERROR;
     }
 
@@ -270,14 +270,14 @@ grid_t* read_grid(FILE* restrict file){
         return NULL;
     }
 
-    double complex lower_left = 0;
-    double complex upper_right = 0; 
-    read_count = fread(&lower_left, sizeof(double complex), 1, file);
+    long double complex lower_left = 0;
+    long double complex upper_right = 0; 
+    read_count = fread(&lower_left, sizeof(long double complex), 1, file);
     if(read_count != 1){
         perror("Error reading file\n");
         return NULL;
     }
-    read_count = fread(&upper_right, sizeof(double complex), 1, file);
+    read_count = fread(&upper_right, sizeof(long double complex), 1, file);
     if(read_count != 1){
         perror("Error reading file\n");
         return NULL;

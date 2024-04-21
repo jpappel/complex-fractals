@@ -1,3 +1,4 @@
+#include <complex.h>
 #include "fractals.h"
 #include "grids.h"
 /*
@@ -5,11 +6,11 @@
  * if the return value is equal to max_iterations, the point lies within the mandelbrot set
  * This is an implementation the escape algorithm
  */
-size_t mandelbrot(const double complex z0, const size_t max_iterations) {
-  double complex z = z0;
+size_t mandelbrot(const long double complex z0, const size_t max_iterations) {
+  long double complex z = z0;
   size_t iteration = 0;
 
-  while (cabs(z) <= 2 && iteration < max_iterations) {
+  while (cabsl(z) <= 2 && iteration < max_iterations) {
     z = z * z + z0;
     iteration++;
   }
@@ -33,10 +34,10 @@ void mandelbrot_grid(grid_t* grid, const size_t max_iterations){
  * if the return value is equal to max_iterations, the point lies within the multibrot set
  * This is implementation closely matches mandelbrot, but uses cpow which might degrade performance.
  */
-size_t multibrot(const double complex z0, const size_t max_iterations, const double d){
-    double complex z = z0;
+size_t multibrot(const long double complex z0, const size_t max_iterations, const double d){
+    long double complex z = z0;
     size_t iteration = 0;
-    while(cabs(z) <= 2 && iteration < max_iterations){
+    while(cabsl(z) <= 2 && iteration < max_iterations){
         z = cpowl(z, d) + z0;
         iteration++;
     }
@@ -59,13 +60,13 @@ void multibrot_grid(grid_t* grid, const size_t max_iterations, const double d){
  * Computes ????? for a julia set
  * implementation of https://en.wikipedia.org/wiki/Julia_set#Pseudocode
  */
-size_t julia(const double R, const double complex z0, const double complex c, const size_t max_iterations){
+size_t julia(const double R, const long double complex z0, const long double complex c, const size_t max_iterations){
     //FIXME: I'm notsure if this is currently implemented correctly
-    if(R*R - R >= cabs(z0)) return 0;
-    double complex z = z0;
+    if(R*R - R >= cabsl(z0)) return 0;
+    long double complex z = z0;
 
     size_t iteration = 0;
-    while(cabs(z) < R && iteration < max_iterations){
+    while(cabsl(z) < R && iteration < max_iterations){
         z = z * z + c;
         iteration++;
     }
