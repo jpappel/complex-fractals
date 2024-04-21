@@ -20,8 +20,14 @@ all: $(BUILD_DIR)/$(TARGET)
 #  Programs  #
 ##############
 
-build/fractals: $(OBJ_DIR)/fractals.o $(OBJ_DIR)/serial-fractals.o $(OBJ_DIR)/grids.o
+$(BUILD_DIR)/serial-fractals: $(OBJ_DIR)/fractals.o $(OBJ_DIR)/serial-fractals.o $(OBJ_DIR)/grids.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+$(BUILD_DIR)/shared-fractals: $(OBJ_DIR)/fractals.o $(OBJ_DIR)/shared-fractals.o $(OBJ_DIR)/grids.o
+	$(CC) $(CFLAGS) -fopenmp $^ -o $@ $(LDFLAGS)
+
+$(OBJ_DIR)/shared-fractals.o: $(SRC_DIR)/shared-fractals.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -fopenmp-c -o $@ $<
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c  | $(OBJ_DIR)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
@@ -51,4 +57,4 @@ analysis: analysis/analysis.html
 analysis/analysis.html: analysis/analysis.Rmd # TODO: add compile command
 
 clean:
-	rm -rf presentation/presentation.html analysis/analysis.html $(OBJS)
+	rm -rf $(BUILD_DIR)/* presentation/presentation.html analysis/analysis.html
