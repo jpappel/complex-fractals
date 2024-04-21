@@ -4,8 +4,17 @@
 
 * [ ] find way to render data into image files
 * [ ] write serial
+    * [ ] mandelbrot
+    * [ ] multibrot
+    * [ ] julia
 * [ ] write shared
+    * [ ] mandelbrot
+    * [ ] multibrot
+    * [ ] julia
 * [ ] write gpu
+    * [ ] mandelbrot
+    * [ ] multibrot
+    * [ ] julia
 
 ## Presentation
 
