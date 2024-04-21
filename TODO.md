@@ -3,13 +3,14 @@
 ## Program
 
 * [ ] find way to render data into image files
+    * [x] read/write grids to/from file
 * [ ] write serial
-    * [ ] mandelbrot
-    * [ ] multibrot
+    * [x] mandelbrot
+    * [x] multibrot
     * [ ] julia
 * [ ] write shared
-    * [ ] mandelbrot
-    * [ ] multibrot
+    * [x] mandelbrot
+    * [x] multibrot
     * [ ] julia
 * [ ] write gpu
     * [ ] mandelbrot

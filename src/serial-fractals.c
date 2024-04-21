@@ -1,6 +1,6 @@
-#include <complex.h>
 #include "fractals.h"
 #include "grids.h"
+
 /*
  * Computes the number of iterations it takes for a point z0 to diverge
  * if the return value is equal to max_iterations, the point lies within the mandelbrot set
