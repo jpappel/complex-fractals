@@ -1,4 +1,5 @@
 #include "fractals.h"
+#include "grids.h"
 /*
  * Computes the number of iterations it takes for a point z0 to diverge
  * if the return value is equal to max_iterations, the point lies within the mandelbrot set
@@ -15,26 +16,43 @@ size_t mandelbrot(const double complex z0, const size_t max_iterations) {
   return iteration;
 }
 
+/*
+ * Fills a grid with mandelbrot values
+ */
+void mandelbrot_grid(grid_t* grid, const size_t max_iterations){
+    const size_t size = grid->size;
+    size_t* data = grid->data;
+
+    for(size_t i = 0; i < size; i++){
+        data[i] = mandelbrot(grid_to_complex(grid, i), max_iterations);
+    }
+}
 
 /*
  * Computes the number of iterations it takes for a point z0 to diverge
  * if the return value is equal to max_iterations, the point lies within the multibrot set
- * This is implementation closely matches mandelbrot
- * Note, only positive integer powers are supported
+ * This is implementation closely matches mandelbrot, but uses cpow which might degrade performance.
  */
-size_t multibrot(const double complex z0, const size_t max_iterations, const uintmax_t d){
+size_t multibrot(const double complex z0, const size_t max_iterations, const double d){
     double complex z = z0;
-    double complex ztemp;
     size_t iteration = 0;
     while(cabs(z) <= 2 && iteration < max_iterations){
-        ztemp = z;
-        for(size_t i = 0; i < d; i ++){
-            ztemp *= ztemp;
-        }
-        z = ztemp + z0;
+        z = cpowl(z, d) + z0;
         iteration++;
     }
     return iteration;
+}
+
+
+/*
+ * Fills a grid with multibrot values
+ */
+void multibrot_grid(grid_t* grid, const size_t max_iterations, const double d){
+    const size_t size = grid->size;
+    size_t* data = grid->data;
+    for(size_t i = 0; i < size; i ++){
+        data[i] = multibrot(grid_to_complex(grid, i), max_iterations, d);
+    }
 }
 
 /*

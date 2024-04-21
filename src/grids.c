@@ -1,3 +1,4 @@
+#include <complex.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,6 +27,7 @@ grid_t* create_grid(const size_t x, const size_t y, double complex lower_left, d
     *grid = (grid_t){
         .x = x,
         .y = y,
+        .size = x*y,
         .lower_left = lower_left,
         .upper_right = upper_right,
         .data = data
@@ -120,6 +122,23 @@ double complex grid_to_complex(const grid_t* grid, const size_t index) {
 }
 
 /*
+ * Zoom a grid in or out based on its current center
+ *
+ * Resets all grid values to 0
+ */
+void zoom_grid(grid_t* grid, const double magnification){
+    set_grid(grid, 0);
+    const double complex upper_right = grid->upper_right;
+    const double complex lower_left = grid->lower_left;
+
+    const double complex center = (lower_left + upper_right) / 2.0;
+    const double complex offset = (upper_right - lower_left) / magnification;
+
+    grid->lower_left = center - offset;
+    grid->upper_right = center + offset;
+}
+
+/*
  * Writes a grid to a file in the .grid format
  *
  * Returns 0 on success
@@ -154,6 +173,65 @@ int write_grid(FILE* restrict file, const grid_t *grid){
     }
 
     return 0;
+}
+
+/*
+ * Prints info about a grid to stdout
+ */
+void print_grid_info(const grid_t* grid){
+    if(!grid){
+        printf("Grid is NULL!\n");
+        return;
+    }
+
+    printf("x\t%zu\n", grid->x);
+    printf("y\t%zu\n", grid->y);
+    printf("size\t%zu\n", grid->size);
+    printf("lower_left\t%f + %fI\n", creal(grid->lower_left), cimag(grid->lower_left));
+    printf("upper_right\t%f + %fI\n", creal(grid->upper_right), cimag(grid->upper_right));
+
+    printf("Data is %s NULL\n", grid->data ? "not" : "");
+}
+
+/*
+ * Attempts an ASCII print of the grid
+ */
+void print_grid(const grid_t* grid, const size_t iterations){
+    const size_t size = grid->size;
+    const size_t x_res = grid->x;
+    const size_t* data = grid->data;
+
+    // char* output_buffer = malloc(size);
+    // if(!output_buffer){
+    //     fprintf(stderr, "Failed to allocate output buffer for %zu points\n");
+    //     return;
+    // }
+
+    const char point_types[] = { ' ', '.', '*', '%', '#'};
+    size_t bin_width = iterations/3;
+    size_t last_bin = iterations - bin_width;
+    char point;
+
+    //TODO: set values in output buffer rather than multiple printf calls
+    for(size_t i = 0; i < size; i++){
+        const size_t value = data[i];
+        if(value == iterations){
+            point = point_types[4];
+        }
+        else if(value == 0){
+            point = point_types[0];
+        }
+        else if(value <= bin_width){
+            point = point_types[1];
+        }
+        else if(value >= last_bin){
+            point = point_types[3];
+        }
+        else {
+            point = point_types[2];
+        }
+        printf("%c%s", point, (i % x_res == x_res - 1) ? "\n" : "");
+    }
 }
 
 /*

@@ -28,6 +28,9 @@ bool grid_equal(const grid_t* grid1, const grid_t* grid2);
 bool grid_allclose(const grid_t* grid1, const grid_t* grid2, const size_t max_error);
 
 double complex grid_to_complex(const grid_t* grid, const size_t index);
+void zoom_grid(grid_t* grid, const double magnification);
 
+void print_grid_info(const grid_t* grid);
+void print_grid(const grid_t* grid, const size_t iterations);
 int write_grid(FILE* restrict file, const grid_t* grid);
 grid_t* read_grid(FILE* restrict file);
