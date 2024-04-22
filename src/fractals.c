@@ -1,15 +1,19 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <sys/ioctl.h>
 
 #include "grids.h"
 #include "fractals.h"
 
 int main(const int argc, char *argv[]) {
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+
     //default values
     size_t iterations = 1000;
-    size_t x_res = 100;
-    size_t y_res = 100;
+    size_t x_res = w.ws_col;
+    size_t y_res = w.ws_row;
     double re_lower_left = -2;
     double im_lower_left = -2;
     double re_upper_right = 2;
@@ -69,9 +73,11 @@ int main(const int argc, char *argv[]) {
 
 
     //const long double complex c = 0.285L + 0.01L*I;
-    const long double complex c = -0.835L -0.321L* I;
-    const double R = 100;
-    julia_grid(grid, iterations, c, R);
+    // const long double complex c = -0.835L -0.321L* I;
+    // const double R = 100;
+    // julia_grid(grid, iterations, c, R);
+    mandelbrot_grid(grid, iterations);
+    //multibrot_grid(grid, iterations, 3);
 
     if(verbose)print_grid_info(grid);
     print_grid(grid, iterations);
