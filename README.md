@@ -4,7 +4,20 @@ Final Project for Moravian University CSCI 392: High Performance Computing.
 
 ## Program
 
+Each version of the complex fractal generator has its own dependencies.
+The serial version should compile on all systems that support complex arithmetic.
+
+The shared version requires a compiler with [OpenMP](https://www.openmp.org/) support.
+
+The image plotting program works with [ImageMagick](https://www.openmp.org/) 7+. Earlier versions may work but are not supported.
+
 ### Building
+
+To build all versions simply run
+
+```bash
+make
+```
 
 ### Running
 

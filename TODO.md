@@ -4,6 +4,7 @@
 
 * [ ] find way to render data into image files
     * [x] read/write grids to/from file
+    * [ ] create image with ImageMagick core/wand
 * [x] write serial
     * [x] mandelbrot
     * [x] multibrot
