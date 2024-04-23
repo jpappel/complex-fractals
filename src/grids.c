@@ -7,7 +7,7 @@
 /*
  * Creates a grid for storing the results of the escape algorithm
  */
-grid_t* create_grid(const size_t x, const size_t y, long double complex lower_left, long double complex upper_right){
+grid_t* create_grid(const size_t x, const size_t y, CBASE complex lower_left, CBASE complex upper_right){
     if(x <= 0 || y <= 0) return NULL;
 
     const size_t size = x * y;
@@ -83,7 +83,7 @@ bool grid_equal(const grid_t* grid1, const grid_t* grid2){
 /*
  * Checks if two grids have a given maximum difference
  */
-bool grid_allclose(const grid_t *grid1, const grid_t *grid2, const size_t max_error){
+bool grid_allclose(const grid_t* restrict grid1, const grid_t* restrict grid2, const size_t max_error){
     if(grid1->x != grid2->x || grid1->y != grid2->y ||
             grid1->lower_left != grid2->lower_left || grid1->upper_right != grid2->upper_right){
         return false;
@@ -101,22 +101,22 @@ bool grid_allclose(const grid_t *grid1, const grid_t *grid2, const size_t max_er
 /*
  * Converts a grid point into the corresponding complex number
  */
-long double complex grid_to_complex(const grid_t* grid, const size_t index) {
+CBASE complex grid_to_complex(const grid_t* grid, const size_t index) {
     const size_t x_res = grid->x;
     const size_t y_res = grid->y;
-    const long double x_min = creal(grid->lower_left);
-    const long double x_max = creal(grid->upper_right);
-    const long double y_min = cimag(grid->lower_left);
-    const long double y_max = cimag(grid->upper_right);
+    const CBASE x_min = creal(grid->lower_left);
+    const CBASE x_max = creal(grid->upper_right);
+    const CBASE y_min = cimag(grid->lower_left);
+    const CBASE y_max = cimag(grid->upper_right);
 
-    const long double x_step = (x_max - x_min) / (double)x_res;
-    const long double y_step = (y_max - y_min) / (double)y_res;
+    const CBASE x_step = (x_max - x_min) / (double)x_res;
+    const CBASE y_step = (y_max - y_min) / (double)y_res;
 
     const size_t x_index = index % x_res;
     const size_t y_index = index / y_res;
 
-    const long double x = x_min + x_index * x_step;
-    const long double y = y_min + y_index * y_step;
+    const CBASE x = x_min + x_index * x_step;
+    const CBASE y = y_min + y_index * y_step;
 
     return x + y * I;
 }
@@ -126,13 +126,13 @@ long double complex grid_to_complex(const grid_t* grid, const size_t index) {
  *
  * Resets all grid values to 0
  */
-void zoom_grid(grid_t* grid, const double magnification){
+void zoom_grid(grid_t* restrict grid, const CBASE magnification){
     set_grid(grid, 0);
-    const long double complex upper_right = grid->upper_right;
-    const long double complex lower_left = grid->lower_left;
+    const CBASE complex upper_right = grid->upper_right;
+    const CBASE complex lower_left = grid->lower_left;
 
-    const long double complex center = (lower_left + upper_right) / 2.0;
-    const long double complex offset = (upper_right - lower_left) / magnification;
+    const CBASE complex center = (lower_left + upper_right) / 2.0;
+    const CBASE complex offset = (upper_right - lower_left) / magnification;
 
     grid->lower_left = center - offset;
     grid->upper_right = center + offset;
@@ -166,8 +166,8 @@ int write_grid(FILE* restrict file, const grid_t *grid){
 
     if(fwrite(&grid->x, sizeof(size_t), 1, file) != 1 ||
        fwrite(&grid->y, sizeof(size_t), 1, file) != 1 ||
-       fwrite(&grid->lower_left, sizeof(long double complex), 1, file) != 1 ||
-       fwrite(&grid->upper_right, sizeof(long double complex), 1, file) != 1){
+       fwrite(&grid->lower_left, sizeof(CBASE complex), 1, file) != 1 ||
+       fwrite(&grid->upper_right, sizeof(CBASE complex), 1, file) != 1){
         return GRID_WRITE_ERROR;
     }
 
@@ -190,8 +190,8 @@ void print_grid_info(const grid_t* grid){
     printf("x\t%zu\n", grid->x);
     printf("y\t%zu\n", grid->y);
     printf("size\t%zu\n", grid->size);
-    printf("lower_left\t%f + %fI\n", creal(grid->lower_left), cimag(grid->lower_left));
-    printf("upper_right\t%f + %fI\n", creal(grid->upper_right), cimag(grid->upper_right));
+    printf("lower_left\t"CFORMAT"+ "CFORMAT"I\n", creal(grid->lower_left), cimag(grid->lower_left));
+    printf("upper_right\t"CFORMAT"+ "CFORMAT"I\n", creal(grid->upper_right), cimag(grid->upper_right));
 
     printf("Data is %s NULL\n", grid->data ? "not" : "");
 }
@@ -204,6 +204,8 @@ void print_grid(const grid_t* grid, const size_t iterations){
     const size_t x_res = grid->x;
     const size_t* data = grid->data;
 
+    //TODO: set values in output buffer rather than multiple printf calls
+    //      the buffer needs to be larger to hold newlines
     // char* output_buffer = malloc(size);
     // if(!output_buffer){
     //     fprintf(stderr, "Failed to allocate output buffer for %zu points\n");
@@ -215,7 +217,6 @@ void print_grid(const grid_t* grid, const size_t iterations){
     size_t last_bin = iterations - bin_width;
     char point;
 
-    //TODO: set values in output buffer rather than multiple printf calls
     for(size_t i = 0; i < size; i++){
         const size_t value = data[i];
         if(value == iterations){
@@ -270,14 +271,14 @@ grid_t* read_grid(FILE* restrict file){
         return NULL;
     }
 
-    long double complex lower_left = 0;
-    long double complex upper_right = 0; 
-    read_count = fread(&lower_left, sizeof(long double complex), 1, file);
+    CBASE complex lower_left = 0;
+    CBASE complex upper_right = 0; 
+    read_count = fread(&lower_left, sizeof(CBASE complex), 1, file);
     if(read_count != 1){
         perror("Error reading file\n");
         return NULL;
     }
-    read_count = fread(&upper_right, sizeof(long double complex), 1, file);
+    read_count = fread(&upper_right, sizeof(CBASE complex), 1, file);
     if(read_count != 1){
         perror("Error reading file\n");
         return NULL;

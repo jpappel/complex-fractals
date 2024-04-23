@@ -4,6 +4,7 @@
 #include <sys/ioctl.h>
 
 #include "grids.h"
+#include "precision.h"
 #include "fractals.h"
 
 int main(const int argc, char *argv[]) {
@@ -14,11 +15,11 @@ int main(const int argc, char *argv[]) {
     size_t iterations = 1000;
     size_t x_res = w.ws_col;
     size_t y_res = w.ws_row;
-    double re_lower_left = -2;
-    double im_lower_left = -2;
-    double re_upper_right = 2;
-    double im_upper_right = 2;
-    double magnification = 1;
+    CBASE re_lower_left = -2;
+    CBASE im_lower_left = -2;
+    CBASE re_upper_right = 2;
+    CBASE im_upper_right = 2;
+    CBASE magnification = 1;
     bool verbose = false;
 
     //parse command line arguments
@@ -35,15 +36,15 @@ int main(const int argc, char *argv[]) {
                 y_res = strtoull(optarg, NULL, 10);
                 break;
             case 'l':
-                sscanf(optarg, "%lf+%lfi", &re_lower_left, &im_lower_left);
+                sscanf(optarg, CFORMAT"+"CFORMAT"i", &re_lower_left, &im_lower_left);
                 break;
             case 'u':
-                sscanf(optarg, "%lf+%lfi", &re_upper_right, &im_upper_right);
+                sscanf(optarg, CFORMAT"+"CFORMAT"i", &re_upper_right, &im_upper_right);
                 break;
             case 'z':
-                sscanf(optarg, "%lf", &magnification);
+                sscanf(optarg, CFORMAT, &magnification);
                 if(magnification <= 0){
-                    fprintf(stderr, "Invalid magnification %f, exitting\n", magnification);
+                    fprintf(stderr, "Invalid magnification "CFORMAT", exitting\n", magnification);
                     return 1;
                 }
                 break;
@@ -59,15 +60,15 @@ int main(const int argc, char *argv[]) {
         }
     }
 
-    const double complex lower_left = re_lower_left + im_lower_left * I;
-    const double complex upper_right = re_upper_right + im_upper_right * I;
+    const CBASE complex lower_left = re_lower_left + im_lower_left * I;
+    const CBASE complex upper_right = re_upper_right + im_upper_right * I;
 
     grid_t* grid = create_grid(x_res, y_res, lower_left, upper_right);
     if(!grid) return 1;
 
 
     if(magnification != 1){
-        if(verbose) printf("Magnification: %f\n", magnification);
+        if(verbose) printf("Magnification: "CFORMAT"\n", magnification);
         zoom_grid(grid, magnification);
     }
 
