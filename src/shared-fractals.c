@@ -34,6 +34,33 @@ void mandelbrot_grid(grid_t* restrict grid, const size_t max_iterations){
 }
 
 /*
+ * Computes the number of iterations it takes for a point z0 to become unbounded
+ * if the return value is equal to max_iterations, the point lies within the tricorn set
+ * This is nearly identical to mandelbrot, except for the complex conjugate
+ */
+size_t tricorn(const CBASE complex z0, const size_t max_iterations){
+    CBASE complex z = z0;
+    size_t iteration = 0;
+    while(CABS(z) <= 2 && iteration < max_iterations){
+        z = CONJ(z * z) + z0;
+        iteration++;
+    }
+    return iteration;
+}
+
+/*
+ * Fills a grid with tricorn values
+ */
+void tricorn_grid(grid_t* grid, const size_t max_iterations){
+    const size_t size = grid->size;
+    size_t* data = grid->data;
+
+    #pragma omp parallel for default(none) shared(data, size, grid, max_iterations) schedule(dynamic)
+    for(size_t i = 0; i < size; i++){
+        data[i] = tricorn(grid_to_complex(grid, i), max_iterations);
+    }
+}
+/*
  * Computes the number of iterations it takes for a point z0 to diverge
  * if the return value is equal to max_iterations, the point lies within the multibrot set
  * This should be identical to the version found in serial-fractals.c
@@ -48,7 +75,6 @@ size_t multibrot(const CBASE complex z0, const size_t max_iterations, const doub
     return iteration;
 }
 
-
 /*
  * Fills a grid with multibrot values
  */
@@ -59,6 +85,33 @@ void multibrot_grid(grid_t* restrict grid, const size_t max_iterations, const do
     #pragma omp parallel for default(none) shared(data, size, grid, max_iterations, d) schedule(dynamic)
     for(size_t i = 0; i < size; i ++){
         data[i] = multibrot(grid_to_complex(grid, i), max_iterations, d);
+    }
+}
+
+/*
+ * Computes the number ofiterations it takes for a point z0 to become unbounded
+ * if the return value is equal to max_iterations, the point lies within the multicorn set
+ * This function is to tricorn as multibrot is to mandelbrot
+ */
+size_t multicorn(const CBASE complex z0, const size_t max_iterations, const double d){
+    CBASE complex z = z0;
+    size_t iteration = 0;
+    while(CABS(z) <= 2 && iteration < max_iterations){
+        z = CONJ(CPOW(z, d)) + z0;
+        iteration++;
+    }
+    return iteration;
+}
+
+/*
+ * Fills a grid with multicorn values
+ */
+void multicorn_grid(grid_t* grid, const size_t max_iterations, const double d){
+    const size_t size = grid->size;
+    size_t* data = grid->data;
+    #pragma omp parallel for default(none) shared(data, size, grid, max_iterations, d) schedule(dynamic)
+    for(size_t i = 0; i < size; i ++){
+        data[i] = multicorn(grid_to_complex(grid, i), max_iterations, d);
     }
 }
 

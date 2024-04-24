@@ -104,10 +104,10 @@ bool grid_allclose(const grid_t* restrict grid1, const grid_t* restrict grid2, c
 CBASE complex grid_to_complex(const grid_t* grid, const size_t index) {
     const size_t x_res = grid->x;
     const size_t y_res = grid->y;
-    const CBASE x_min = creal(grid->lower_left);
-    const CBASE x_max = creal(grid->upper_right);
-    const CBASE y_min = cimag(grid->lower_left);
-    const CBASE y_max = cimag(grid->upper_right);
+    const CBASE x_min = CREAL(grid->lower_left);
+    const CBASE x_max = CREAL(grid->upper_right);
+    const CBASE y_min = CIMAG(grid->lower_left);
+    const CBASE y_max = CIMAG(grid->upper_right);
 
     const CBASE x_step = (x_max - x_min) / (double)x_res;
     const CBASE y_step = (y_max - y_min) / (double)y_res;
@@ -190,8 +190,8 @@ void print_grid_info(const grid_t* grid){
     printf("x\t%zu\n", grid->x);
     printf("y\t%zu\n", grid->y);
     printf("size\t%zu\n", grid->size);
-    printf("lower_left\t"CFORMAT"+ "CFORMAT"I\n", creal(grid->lower_left), cimag(grid->lower_left));
-    printf("upper_right\t"CFORMAT"+ "CFORMAT"I\n", creal(grid->upper_right), cimag(grid->upper_right));
+    printf("lower_left\t"CFORMAT"+ "CFORMAT"I\n", CREAL(grid->lower_left), CIMAG(grid->lower_left));
+    printf("upper_right\t"CFORMAT"+ "CFORMAT"I\n", CREAL(grid->upper_right), CIMAG(grid->upper_right));
 
     printf("Data is %s NULL\n", grid->data ? "not" : "");
 }
