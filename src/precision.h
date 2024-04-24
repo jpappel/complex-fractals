@@ -13,6 +13,7 @@
 #define CPOW cpowl
 #define CONJ conjl
 #define CABS cabsl
+#define RABS fabsl
 #define CFORMAT "%Lf"
 
 #endif
@@ -24,6 +25,7 @@
 #define CPOW cpow
 #define CONJ conj
 #define CABS cabs
+#define RABS fabs
 #define CFORMAT "%lf"
 
 #endif

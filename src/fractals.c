@@ -126,7 +126,7 @@ int main(const int argc, char *argv[]) {
     // const CBASE complex constant = -0.835L -0.321L* I;
     const double radius = 100;
 
-    enum fractal f = MULTICORN;
+    enum fractal f = BURNING_SHIP;
     switch(f){
         case MANDELBROT:
             mandelbrot_grid(grid, iterations);
@@ -139,6 +139,9 @@ int main(const int argc, char *argv[]) {
             break;
         case MULTICORN:
             multicorn_grid(grid, iterations, degree);
+            break;
+        case BURNING_SHIP:
+            burning_ship_grid(grid, iterations);
             break;
         case JULIA:
             julia_grid(grid, iterations, constant, radius);

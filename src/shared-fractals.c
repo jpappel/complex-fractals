@@ -1,6 +1,7 @@
 #include "fractals.h"
 
 #include <omp.h>
+#include <math.h>
 #include "fractals.h"
 #include "precision.h"
 
@@ -60,6 +61,37 @@ void tricorn_grid(grid_t* grid, const size_t max_iterations){
         data[i] = tricorn(grid_to_complex(grid, i), max_iterations);
     }
 }
+
+/*
+ * Computes the number of iterations it takes for a point z0 to become unbounded
+ * if the return value is equal to max_iterations, the point lies within the burningship set (oh no! I hope they have fire safety gear)
+ */
+size_t burning_ship(const CBASE complex z0, const size_t max_iterations) {
+  CBASE complex z = z0;
+  CBASE complex z_mod;
+  size_t iteration = 0;
+
+  while (CABS(z) <= 2 && iteration < max_iterations) {
+    z_mod = RABS(CREAL(z)) + RABS(CIMAG(z))*I;
+    z = z_mod * z_mod + z0;
+    iteration++;
+  }
+  return iteration;
+}
+
+/*
+ * Fills a grid with burning_ship values
+ */
+void burning_ship_grid(grid_t* grid, const size_t max_iterations){
+    const size_t size = grid->size;
+    size_t* data = grid->data;
+
+    #pragma omp parallel for default(none) shared(data, size, grid, max_iterations) schedule(dynamic)
+    for(size_t i = 0; i < size; i++){
+        data[i] = burning_ship(grid_to_complex(grid, i), max_iterations);
+    }
+}
+
 /*
  * Computes the number of iterations it takes for a point z0 to diverge
  * if the return value is equal to max_iterations, the point lies within the multibrot set
