@@ -9,8 +9,6 @@ The serial version should compile on all systems that support complex arithmetic
 
 The shared version requires a compiler with [OpenMP](https://www.openmp.org/) support.
 
-The image plotting program works with [ImageMagick](https://www.openmp.org/) 7+. Earlier versions may work but are not supported.
-
 ### Building
 
 To build all versions simply run

@@ -8,6 +8,8 @@
 * question: how do we handle recursion in computer science
     * we avoid it!
 * Mention how when Mandelbrot initially tried to have his computed image printed, the printers kept removing the "dust" thinking it was a misprint
+* cpus support greater precision than gpus
+    * "precision.h"
 * serial algorithm for computing Mandelbrot set
     * runtime
     * animation where the number of frames are dependent on runtime
