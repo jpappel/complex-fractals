@@ -165,8 +165,9 @@ size_t julia(const CBASE complex z0, const CBASE complex c, const size_t max_ite
     return iteration;
 }
 
-void julia_grid(grid_t* restrict grid, const size_t max_iterations, const CBASE complex c, const double R){
+void julia_grid(grid_t* restrict grid, const size_t max_iterations, const complex_t constant, const double R){
     const size_t size = grid->size;
+    const CBASE complex c = constant.re + constant.im * I;
     size_t* data = grid->data;
     #pragma omp parallel for default(none) shared(data, size, grid, max_iterations, c, R) schedule(dynamic)
     for(size_t i = 0; i < size; i++){

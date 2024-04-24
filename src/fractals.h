@@ -32,4 +32,4 @@ size_t multicorn(const CBASE complex z0, const size_t max_iterations, const doub
 void multicorn_grid(grid_t* grid, const size_t max_iterations, const double d);
 
 size_t julia(const CBASE complex z0, const CBASE complex c, const size_t max_iterations, const double R);
-void julia_grid(grid_t* grid, const size_t max_iterations, const CBASE complex c, const double R);
+void julia_grid(grid_t* grid, const size_t max_iterations, const complex_t c, const double R);

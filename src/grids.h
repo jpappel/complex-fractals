@@ -12,16 +12,22 @@
 
 #define GRID_MAGIC_NUMBER 0xA6005E
 
+// hack to  determine variable precision at compile time
+typedef struct {
+    CBASE re;
+    CBASE im;
+} complex_t;
+
 typedef struct {
     size_t x;
     size_t y;
     size_t size;
-    CBASE complex lower_left;
-    CBASE complex upper_right;
+    complex_t lower_left;
+    complex_t upper_right;
     size_t* data;
 } grid_t;
 
-grid_t* create_grid(const size_t x, const size_t y, CBASE complex lower_left, CBASE complex upper_right);
+grid_t* create_grid(const size_t x, const size_t y, complex_t lower_left, complex_t upper_right);
 void set_grid(grid_t* grid, const size_t val);
 grid_t* copy_grid(const grid_t* grid);
 void free_grid(grid_t* grid);
@@ -33,5 +39,5 @@ void zoom_grid(grid_t* grid, const CBASE magnification);
 
 void print_grid_info(const grid_t* grid);
 void print_grid(const grid_t* grid, const size_t iterations);
-int write_grid(FILE* restrict file, const grid_t* grid);
-grid_t* read_grid(FILE* restrict file);
+int write_grid(FILE* file, const grid_t* grid);
+grid_t* read_grid(FILE* file);

@@ -4,10 +4,14 @@
 #include <string.h>
 #include "grids.h"
 
+static inline bool equal_complex_t(const complex_t z1, const complex_t z2){
+    return z1.re == z2.re && z1.im == z2.im;
+}
+
 /*
  * Creates a grid for storing the results of the escape algorithm
  */
-grid_t* create_grid(const size_t x, const size_t y, CBASE complex lower_left, CBASE complex upper_right){
+grid_t* create_grid(const size_t x, const size_t y, complex_t lower_left, complex_t upper_right){
     if(x <= 0 || y <= 0) return NULL;
 
     const size_t size = x * y;
@@ -74,10 +78,13 @@ void free_grid(grid_t* grid){
  * This may return incorrect values due to floating point arrithmetic errors 
  * that occur while the grid is being filled
  */
-bool grid_equal(const grid_t* grid1, const grid_t* grid2){
-    return grid1->x == grid2->x && grid1->y == grid2->y &&
-        grid1->lower_left == grid2->lower_left && grid1->upper_right == grid2->upper_right &&
-        memcmp(grid1->data, grid2->data, grid1->size) == 0;
+bool grid_equal(const grid_t* grid1_p, const grid_t* grid2_p){
+    grid_t grid1 = *grid1_p;
+    grid_t grid2 = *grid2_p;
+    const bool lowers_equal = equal_complex_t(grid1.lower_left, grid2.lower_left);
+    const bool uppers_equal = equal_complex_t(grid1.upper_right, grid2.upper_right);
+    const bool dimensions_equal = grid1.x == grid2.x && grid1.y == grid2.y;
+    return lowers_equal && uppers_equal && dimensions_equal && memcmp(grid1.data, grid2.data, grid1.size) == 0;
 }
 
 /*
@@ -85,7 +92,8 @@ bool grid_equal(const grid_t* grid1, const grid_t* grid2){
  */
 bool grid_allclose(const grid_t* restrict grid1, const grid_t* restrict grid2, const size_t max_error){
     if(grid1->x != grid2->x || grid1->y != grid2->y ||
-            grid1->lower_left != grid2->lower_left || grid1->upper_right != grid2->upper_right){
+            !equal_complex_t(grid1->lower_left, grid2->lower_left) ||
+            !equal_complex_t(grid1->upper_right, grid2->upper_right)){
         return false;
     }
     const size_t size = grid1->size;
@@ -101,13 +109,14 @@ bool grid_allclose(const grid_t* restrict grid1, const grid_t* restrict grid2, c
 /*
  * Converts a grid point into the corresponding complex number
  */
-CBASE complex grid_to_complex(const grid_t* grid, const size_t index) {
-    const size_t x_res = grid->x;
-    const size_t y_res = grid->y;
-    const CBASE x_min = CREAL(grid->lower_left);
-    const CBASE x_max = CREAL(grid->upper_right);
-    const CBASE y_min = CIMAG(grid->lower_left);
-    const CBASE y_max = CIMAG(grid->upper_right);
+CBASE complex grid_to_complex(const grid_t* grid_p, const size_t index) {
+    const grid_t grid = *grid_p;
+    const size_t x_res = grid.x;
+    const size_t y_res = grid.y;
+    const CBASE x_min = grid.lower_left.re;
+    const CBASE x_max = grid.upper_right.re;
+    const CBASE y_min = grid.lower_left.im;
+    const CBASE y_max = grid.upper_right.im;
 
     const CBASE x_step = (x_max - x_min) / (double)x_res;
     const CBASE y_step = (y_max - y_min) / (double)y_res;
@@ -128,14 +137,30 @@ CBASE complex grid_to_complex(const grid_t* grid, const size_t index) {
  */
 void zoom_grid(grid_t* restrict grid, const CBASE magnification){
     set_grid(grid, 0);
-    const CBASE complex upper_right = grid->upper_right;
-    const CBASE complex lower_left = grid->lower_left;
+    // const CBASE complex upper_right = grid->upper_right;
+    const complex_t upper_right = grid->upper_right;
+    // const CBASE complex lower_left = grid->lower_left;
+    const complex_t lower_left = grid->lower_left;
 
-    const CBASE complex center = (lower_left + upper_right) / 2.0;
-    const CBASE complex offset = (upper_right - lower_left) / magnification;
+    const CBASE inv2 = 1 / 2.0;
+    const CBASE inv_mag = 1 / magnification;
+    const complex_t center = {
+        .re = inv2 * (lower_left.re + upper_right.re),
+        .im = inv2 * (lower_left.im + lower_left.im)
+    };
+    const complex_t offset = {
+        .re = inv_mag * (upper_right.re - lower_left.re),
+        .im = inv_mag * (upper_right.im - lower_left.im)
+    };
 
-    grid->lower_left = center - offset;
-    grid->upper_right = center + offset;
+    grid->lower_left = (complex_t){
+        .re = center.re - offset.re,
+        .im = center.im - offset.im
+    };
+    grid->upper_right = (complex_t){
+        .re = center.re + offset.re,
+        .im = center.im + offset.im
+    };
 }
 
 /*
@@ -143,10 +168,12 @@ void zoom_grid(grid_t* restrict grid, const CBASE magnification){
  *
  * Returns 0 on success
  *
+ * FIXME: add dynamic bounding box resolution by storing sizeof points in the file
  * The .grid format is a binary file format
  * The first 3 bytes of the file are a magic number defined in grids.h
  * The next 16 bytes are the grid dimensions (x then y)
- * Following are 32 bytes are the bounding of the complex region (lower_left then upper_right)
+ * The next 2 bytes are the size of a grid point in bytes
+ * Following are bytes are the bounding of the complex region (lower_left then upper_right)
  * The rest of the file is the data for the grid, which should be exactly x*y*8 bytes
  */
 int write_grid(FILE* restrict file, const grid_t *grid){
@@ -190,8 +217,8 @@ void print_grid_info(const grid_t* grid){
     printf("x\t%zu\n", grid->x);
     printf("y\t%zu\n", grid->y);
     printf("size\t%zu\n", grid->size);
-    printf("lower_left\t"CFORMAT"+ "CFORMAT"I\n", CREAL(grid->lower_left), CIMAG(grid->lower_left));
-    printf("upper_right\t"CFORMAT"+ "CFORMAT"I\n", CREAL(grid->upper_right), CIMAG(grid->upper_right));
+    printf("lower_left\t"CFORMAT"+ "CFORMAT"I\n", grid->lower_left.re, grid->lower_left.im);
+    printf("upper_right\t"CFORMAT"+ "CFORMAT"I\n", grid->upper_right.re, grid->upper_right.im);
 
     printf("Data is %s NULL\n", grid->data ? "not" : "");
 }
@@ -271,8 +298,11 @@ grid_t* read_grid(FILE* restrict file){
         return NULL;
     }
 
-    CBASE complex lower_left = 0;
-    CBASE complex upper_right = 0; 
+    //FIXME: this will read correctly now
+    complex_t lower_left;
+    complex_t upper_right;
+    // CBASE complex lower_left = 0;
+    // CBASE complex upper_right = 0; 
     read_count = fread(&lower_left, sizeof(CBASE complex), 1, file);
     if(read_count != 1){
         perror("Error reading file\n");

@@ -83,7 +83,7 @@ int main(const int argc, char *argv[]) {
                 sscanf(optarg, CFORMAT"+"CFORMAT"i", &re_upper_right, &im_upper_right);
                 break;
             case 'o':
-                //TODO: check if within length
+                //TODO: check if can write to location
                 //TODO: 
                 break;
             case 'p':
@@ -108,8 +108,10 @@ int main(const int argc, char *argv[]) {
         }
     }
 
-    const CBASE complex lower_left = re_lower_left + im_lower_left * I;
-    const CBASE complex upper_right = re_upper_right + im_upper_right * I;
+    //const CBASE complex lower_left = re_lower_left + im_lower_left * I;
+    const complex_t lower_left = { .re=re_lower_left, .im=im_lower_left};
+    //const CBASE complex upper_right = re_upper_right + im_upper_right * I;
+    const complex_t upper_right = { .re=re_upper_right, .im=im_upper_right};
 
     grid_t* grid = create_grid(x_res, y_res, lower_left, upper_right);
     if(!grid) return 1;
@@ -122,11 +124,16 @@ int main(const int argc, char *argv[]) {
 
     // params for different fractals
     const double degree = 3.0;
-    const CBASE complex constant = 0.285L + 0.01L*I;
+    // const CBASE complex constant = 0.285L + 0.01L*I;
+    const complex_t constant = {
+        .re = 0.285,
+        .im = 0.01
+    };
     // const CBASE complex constant = -0.835L -0.321L* I;
     const double radius = 100;
 
-    enum fractal f = BURNING_SHIP;
+    // enum fractal f = BURNING_SHIP;
+    enum fractal f = JULIA;
     switch(f){
         case MANDELBROT:
             mandelbrot_grid(grid, iterations);
@@ -147,7 +154,6 @@ int main(const int argc, char *argv[]) {
             julia_grid(grid, iterations, constant, radius);
             break;
         default:
-            //TODO: update fractal type
             fprintf(stderr, "Unrecognized fractal\n");
             return 1;
     }
