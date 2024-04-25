@@ -6,30 +6,30 @@
 #include "grids.h"
 #include "precision.h"
 
-enum fractal {
-    MANDELBROT, // IMPLEMENTED IN SERIAL SHARED
-    TRICORN, // IMPLEMENTED IN SERIAL SHARED
-    MULTIBROT, // IMPLEMENTED IN SERIAL SHARED
-    MULTICORN, // IMPLEMENTED IN SERIAL SHARED
-    BURNING_SHIP, // IMPLEMENTED IN SERIAL SHARED
-    //NEWTON,  // MIGHT NEVER BE IMPLEMENTED, REQUIRES SPECIAL COLORING
-    JULIA // IMPLEMENTED IN SERIAL SHARED
-};
+typedef union {
+    CBASE degree;
+    struct {
+        complex_t constant;
+        double radius;
+    } cr ;
+} grid_gen_params ;
+
+typedef void (*fractal_generator)(grid_t* , const grid_gen_params* );
 
 size_t mandelbrot(const CBASE complex z0, const size_t max_iterations);
-void mandelbrot_grid(grid_t* grid);
+void mandelbrot_grid(grid_t* grid, const grid_gen_params* params);
 
 size_t tricorn(const CBASE complex z0, const size_t max_iterations);
-void tricorn_grid(grid_t* grid);
+void tricorn_grid(grid_t* grid, const grid_gen_params* params);
 
 size_t burning_ship(const CBASE complex z0, const size_t max_iterations);
-void burning_ship_grid(grid_t* grid);
+void burning_ship_grid(grid_t* grid, const grid_gen_params* params);
 
 size_t multibrot(const CBASE complex z0, const size_t max_iterations, const double d);
-void multibrot_grid(grid_t* grid, const double d);
+void multibrot_grid(grid_t* grid, const grid_gen_params* params);
 
 size_t multicorn(const CBASE complex z0, const size_t max_iterations, const double d);
-void multicorn_grid(grid_t* grid, const double d);
+void multicorn_grid(grid_t* grid, const grid_gen_params* params);
 
 size_t julia(const CBASE complex z0, const CBASE complex c, const size_t max_iterations, const double R);
-void julia_grid(grid_t* grid, const complex_t c, const double R);
+void julia_grid(grid_t* grid, const grid_gen_params* params);

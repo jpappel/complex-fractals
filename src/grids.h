@@ -12,7 +12,7 @@
 
 #define GRID_MAGIC_NUMBER 0xA6005E
 
-// hack to  determine variable precision at compile time
+// hack to allow variable precision at compile time
 typedef struct {
     CBASE re;
     CBASE im;

@@ -22,7 +22,7 @@ size_t mandelbrot(const CBASE complex z0, const size_t max_iterations) {
 /*
  * Fills a grid with mandelbrot values
  */
-void mandelbrot_grid(grid_t* grid){
+void mandelbrot_grid(grid_t* grid, const grid_gen_params* params){
     const size_t size = grid->size;
     const size_t max_iterations = grid->max_iterations;
     size_t* data = grid->data;
@@ -50,7 +50,7 @@ size_t tricorn(const CBASE complex z0, const size_t max_iterations){
 /*
  * Fills a grid with tricorn values
  */
-void tricorn_grid(grid_t* grid){
+void tricorn_grid(grid_t* grid, const grid_gen_params* params){
     const size_t size = grid->size;
     const size_t max_iterations = grid->max_iterations;
     size_t* data = grid->data;
@@ -80,7 +80,7 @@ size_t burning_ship(const CBASE complex z0, const size_t max_iterations) {
 /*
  * Fills a grid with burning_ship values
  */
-void burning_ship_grid(grid_t* grid){
+void burning_ship_grid(grid_t* grid, const grid_gen_params* params){
     const size_t size = grid->size;
     const size_t max_iterations = grid->max_iterations;
     size_t* data = grid->data;
@@ -109,7 +109,8 @@ size_t multibrot(const CBASE complex z0, const size_t max_iterations, const doub
 /*
  * Fills a grid with multibrot values
  */
-void multibrot_grid(grid_t* grid, const double d){
+void multibrot_grid(grid_t* grid, const grid_gen_params* params){
+    const double d = params->degree;
     const size_t size = grid->size;
     const size_t max_iterations = grid->max_iterations;
     size_t* data = grid->data;
@@ -136,7 +137,8 @@ size_t multicorn(const CBASE complex z0, const size_t max_iterations, const doub
 /*
  * Fills a grid with multicorn values
  */
-void multicorn_grid(grid_t* grid, const double d){
+void multicorn_grid(grid_t* grid, const grid_gen_params* params){
+    const double d = params->degree;
     const size_t size = grid->size;
     const size_t max_iterations = grid->max_iterations;
     size_t* data = grid->data;
@@ -162,12 +164,14 @@ size_t julia(const CBASE complex z0, const CBASE complex c, const size_t max_ite
     return iteration;
 }
 
-void julia_grid(grid_t* grid, const complex_t constant, const double R){
+void julia_grid(grid_t* grid, const grid_gen_params* params){
+    const complex_t constant = params->cr.constant;
+    const double radius = params->cr.radius;
     const size_t size = grid->size;
     const size_t max_iterations = grid->max_iterations;
     const CBASE complex c = constant.re + constant.im * I;
     size_t* data = grid->data;
     for(size_t i = 0; i <size; i++){
-        data[i] = julia(grid_to_complex(grid, i), c, max_iterations, R);
+        data[i] = julia(grid_to_complex(grid, i), c, max_iterations, radius);
     }
 }

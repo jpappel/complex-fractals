@@ -3,27 +3,52 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <getopt.h>
+#include <string.h>
+#include <time.h>
 
 #include "grids.h"
 #include "precision.h"
 #include "fractals.h"
 
+#define NUM_RUNS 5
 
-void print_usage(FILE* file, char* program_name){
-    fprintf(file, "Usage: %s [-v] [-i iterations] [-x x_res] [-y y_res] [-z magnification] [-l lower_left] [-u upper_right]\n", program_name);
+void print_usage(FILE* file, const char* program_name){
+    fprintf(file, "Usage: %s [-v] [-i iterations] [-x x_res] [-y y_res] [-z magnification] [-l lower_left] [-u upper_right] [-o output_grid] -f fractal\n", program_name);
 }
 
 void print_help(){
-    //TODO: add help
+    printf("Options:\n"
+           "  -i, --iterations <value>        the number of iterations (default: 100)\n"
+           "  -x, --x-res <value>             the horizontal resolution (default: terminal width)\n"
+           "  -y, --y-res <value>             the vertical resolution (default: terminal height)\n"
+           "  -l, --lower-left <value>        Set the lower left corner of the fractal area (default: -2-2i)\n"
+           "  -u, --upper-right <value>       Set the upper right corner of the fractal area (default: 2+2i)\n"
+           "  -z, --magnification <value>     Set the magnification factor (default: 1)\n"
+           "  -o, --output <filename>         the output filename (default: fractal.grid)\n"
+           "  -f, --fractal <type>            the fractal type (default: mandelbrot)\n"
+           "      supported fractals: mandelbrot, tricorn, multibrot, multicorn, burning_ship, julia\n"
+           "  -p, --performance               print performance info\n"
+           "  -v, --verbose                   verbose output\n"
+           "  -h, --help                      prints this help message\n");
 }
 
-void print_info(){
+void print_info(const char* program_name){
     #ifdef EXTENDED_PRECISION
     printf("Compiled with long double float precision\n");
     #endif
     #ifndef EXTENDED_PRECISION
-    printf("Compiled with double float precision\n");
+    printf("%s complied with double float precision\n", program_name);
     #endif
+}
+
+double time_fractal(fractal_generator generator, grid_t* grid, grid_gen_params* params){
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    for(size_t i = 0; i < NUM_RUNS; i++){
+        generator(grid, params);
+    }
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    return (end.tv_sec - start.tv_sec + (end.tv_nsec - start.tv_nsec) * 1.0e-9) / NUM_RUNS;
 }
 
 int main(const int argc, char *argv[]) {
@@ -34,19 +59,15 @@ int main(const int argc, char *argv[]) {
     size_t iterations = 100;
     size_t x_res = w.ws_col;
     size_t y_res = w.ws_row;
-    CBASE re_lower_left = -2;
-    CBASE im_lower_left = -2;
-    CBASE re_upper_right = 2;
-    CBASE im_upper_right = 2;
+    complex_t lower_left = { .re = -2, .im = -2};
+    complex_t upper_right = { .re = 2, .im = 2};
     CBASE magnification = 1;
     bool verbose = false;
-    //TODO: allocate adequate size buffer
-    bool output_to_file = true;
+    bool performance = false;
+    grid_gen_params* params;
+    char* fractal_name;
+    fractal_generator generator = mandelbrot_grid;
     char* output_filename = "fractal.grid";
-
-    // TODO: have output format option
-    // TODO: have output file
-
 
     static struct option long_options[] = {
         {"iterations", required_argument, NULL, 'i'},
@@ -57,13 +78,15 @@ int main(const int argc, char *argv[]) {
         {"magnification", required_argument, NULL, 'z'},
         {"output", required_argument, NULL, 'o'},
         {"verbose", no_argument, NULL, 'v'},
+        {"performance", no_argument, NULL, 'p'},
         {"help", no_argument, NULL, 'h'},
+        {"fractal", required_argument, NULL, 'f'},
         {0, 0, 0, 0} // Termination element
     };
 
     //parse command line arguments
     int opt;
-    while((opt = getopt_long(argc, argv, "i:x:y:l:u:z:o:vh", long_options, NULL)) != -1){
+    while((opt = getopt_long(argc, argv, "i:x:y:l:u:z:o:vphf:", long_options, NULL)) != -1){
         switch(opt){
             case 'i':
                 iterations = strtoull(optarg, NULL, 10);
@@ -75,15 +98,50 @@ int main(const int argc, char *argv[]) {
                 y_res = strtoull(optarg, NULL, 10);
                 break;
             case 'l':
-                sscanf(optarg, CFORMAT"+"CFORMAT"i", &re_lower_left, &im_lower_left);
+                sscanf(optarg, CFORMAT"+"CFORMAT"i", &lower_left.re, &lower_left.im);
                 break;
             case 'u':
-                sscanf(optarg, CFORMAT"+"CFORMAT"i", &re_upper_right, &im_upper_right);
+                sscanf(optarg, CFORMAT"+"CFORMAT"i", &upper_right.re, &upper_right.im);
                 break;
             case 'o':
-                //TODO: check if can write to location
-                output_to_file = true;
-                //TODO: 
+                output_filename = optarg;
+                break;
+            case 'f':
+                if(strncmp(optarg, "mandelbrot", strlen("mandelbrot")) == 0) {
+                    fractal_name = "mandelbrot";
+                    generator = mandelbrot_grid;
+                }
+                else if(strncmp(optarg, "tricorn", strlen("tricorn")) == 0) {
+                    fractal_name = "tricorn";
+                    generator = tricorn_grid;
+                }
+                else if(strncmp(optarg, "multibrot", strlen("multibrot")) == 0) {
+                    fractal_name = "multibrot";
+                    generator = multibrot_grid;
+                    params = malloc(sizeof(grid_gen_params));
+                    params->degree = 3;
+                }
+                else if(strncmp(optarg, "multicorn", strlen("multicorn")) == 0) {
+                    fractal_name = "multicorn";
+                    generator = multicorn_grid;
+                    params = malloc(sizeof(grid_gen_params));
+                    params->degree = 3;
+                }
+                else if(strncmp(optarg, "burning_ship", strlen("burning_ship")) == 0) {
+                    fractal_name = "burning ship";
+                    generator = burning_ship_grid;
+                }
+                else if(strncmp(optarg, "julia", strlen("julia")) == 0) {
+                    fractal_name = "julia";
+                    generator = julia_grid;
+                    params = malloc(sizeof(grid_gen_params));
+                    params->cr.radius = 100;
+                    params->cr.constant = (complex_t){ .re = 0.285, .im = 0.01 };
+                }
+                else {
+                    fprintf(stderr, "Invalid fractal type: %s, see --help for a list of supported fractals\n", optarg);
+                    return 1;
+                }
                 break;
             case 'z':
                 sscanf(optarg, CFORMAT, &magnification);
@@ -95,8 +153,12 @@ int main(const int argc, char *argv[]) {
             case 'v':
                 verbose = true;
                 break;
+            case 'p':
+                performance = true;
+                break;
             case 'h':
                 print_usage(stdout, argv[0]);
+                print_help();
                 return 0;
             default:
                 print_usage(stderr, argv[0]);
@@ -104,75 +166,37 @@ int main(const int argc, char *argv[]) {
         }
     }
 
-    //const CBASE complex lower_left = re_lower_left + im_lower_left * I;
-    const complex_t lower_left = { .re=re_lower_left, .im=im_lower_left};
-    //const CBASE complex upper_right = re_upper_right + im_upper_right * I;
-    const complex_t upper_right = { .re=re_upper_right, .im=im_upper_right};
-
     grid_t* grid = create_grid(x_res, y_res, iterations, lower_left, upper_right);
     if(!grid) return 1;
 
 
     if(magnification != 1){
-        if(verbose) printf("Magnification: "CFORMAT"\n", magnification);
         zoom_grid(grid, magnification);
     }
 
-    // params for different fractals
-    const double degree = 3.0;
-    // const CBASE complex constant = 0.285L + 0.01L*I;
-    const complex_t constant = {
-        .re = 0.285,
-        .im = 0.01
-    };
-    // const CBASE complex constant = -0.835L -0.321L* I;
-    const double radius = 100;
+    // TODO: make additional param to fractals that take these in
 
-    // enum fractal f = BURNING_SHIP;
-    enum fractal f = JULIA;
-    switch(f){
-        case MANDELBROT:
-            mandelbrot_grid(grid);
-            break;
-        case TRICORN:
-            tricorn_grid(grid);
-            break;
-        case MULTIBROT:
-            multibrot_grid(grid, degree);
-            break;
-        case MULTICORN:
-            multicorn_grid(grid, degree);
-            break;
-        case BURNING_SHIP:
-            burning_ship_grid(grid);
-            break;
-        case JULIA:
-            julia_grid(grid, constant, radius);
-            break;
-        default:
-            fprintf(stderr, "Unrecognized fractal\n");
-            return 1;
+    generator(grid, params);
+
+    if(performance){
+        double time = time_fractal(generator, grid, params);
+        printf("%s,%f\n", fractal_name, time);
     }
 
-    if(verbose)print_grid_info(grid);
-
-    //write grid to file
-    if(output_to_file){
-        FILE* write_file = fopen("test.grid", "wb");
-        int err = write_grid(write_file , grid);
-        if(err == GRID_WRITE_ERROR){
-            fprintf(stderr, "Error writing occured while writting to file %s\n", output_filename);
-        }
-        fclose(write_file);
+    if(verbose){
+        print_info(argv[0]);
+        printf("Magnification:\t"CFORMAT"\n", magnification);
+        print_grid_info(grid);
     }
 
+    FILE* file = fopen(output_filename, "wb");
+    if(write_grid(file, grid) == GRID_WRITE_ERROR){
+        fprintf(stderr, "Error writing occured while writting to file %s\n", output_filename);
+    }
+    fclose(file);
+
+    free(params);
     free_grid(grid);
-    // //attempt to read grid from file
-    // FILE* read_file = fopen("test2.grid", "rb");
-    // grid_t* grid2 = read_grid(read_file);
-    // fclose(read_file);
-    //
-    // printf("Grids are %s equal\n", grid_equal(grid, grid2) ? "exactly" :"not exactly");
 
     return 0;
 }
