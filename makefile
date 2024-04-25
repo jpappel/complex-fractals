@@ -1,13 +1,13 @@
 CC := gcc
-CPPFLAGS :=
-CFLAGS := -Wall
+CPPFLAGS := -DEXTENDED_PRECISION
+CFLAGS := -Wall 
 LDFLAGS := -lm
 
 SRC_DIR := src
 BUILD_DIR := build
 OBJ_DIR := $(BUILD_DIR)/objects
 
-TARGET := serial-fractals shared-fractals
+TARGET := fractal-render serial-fractals shared-fractals
 SRCS := $(wildcard $(SRC_DIR)/*.c)
 OBJS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
@@ -19,6 +19,9 @@ all: $(addprefix $(BUILD_DIR)/, $(TARGET))
 ##############
 #  Programs  #
 ##############
+
+$(BUILD_DIR)/fractal-render: $(OBJ_DIR)/fractal_render.o $(OBJ_DIR)/grids.o
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 $(BUILD_DIR)/serial-fractals: $(OBJ_DIR)/fractals.o $(OBJ_DIR)/serial-fractals.o $(OBJ_DIR)/grids.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)

@@ -1,4 +1,4 @@
-# Complex Fractals
+# Complex Fractal
 
 Final Project for Moravian University CSCI 392: High Performance Computing.
 
