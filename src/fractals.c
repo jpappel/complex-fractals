@@ -10,7 +10,9 @@
 #include "precision.h"
 #include "fractals.h"
 
+#ifndef NUM_RUNS
 #define NUM_RUNS 5
+#endif
 
 void print_usage(FILE* file, const char* program_name){
     fprintf(file, "Usage: %s [-v] [-i iterations] [-x x_res] [-y y_res] [-z magnification] [-l lower_left] [-u upper_right] [-o output_grid] -f fractal\n", program_name);
