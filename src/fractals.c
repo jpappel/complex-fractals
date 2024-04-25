@@ -40,9 +40,8 @@ int main(const int argc, char *argv[]) {
     CBASE im_upper_right = 2;
     CBASE magnification = 1;
     bool verbose = false;
-    bool print = false;
     //TODO: allocate adequate size buffer
-    bool output_to_file = false;
+    bool output_to_file = true;
     char* output_filename = "fractal.grid";
 
     // TODO: have output format option
@@ -57,7 +56,6 @@ int main(const int argc, char *argv[]) {
         {"upper-right", required_argument, NULL, 'u'},
         {"magnification", required_argument, NULL, 'z'},
         {"output", required_argument, NULL, 'o'},
-        {"print", no_argument, NULL, 'p'},
         {"verbose", no_argument, NULL, 'v'},
         {"help", no_argument, NULL, 'h'},
         {0, 0, 0, 0} // Termination element
@@ -65,7 +63,7 @@ int main(const int argc, char *argv[]) {
 
     //parse command line arguments
     int opt;
-    while((opt = getopt_long(argc, argv, "i:x:y:l:u:z:o:pvh", long_options, NULL)) != -1){
+    while((opt = getopt_long(argc, argv, "i:x:y:l:u:z:o:vh", long_options, NULL)) != -1){
         switch(opt){
             case 'i':
                 iterations = strtoull(optarg, NULL, 10);
@@ -84,10 +82,8 @@ int main(const int argc, char *argv[]) {
                 break;
             case 'o':
                 //TODO: check if can write to location
+                output_to_file = true;
                 //TODO: 
-                break;
-            case 'p':
-                print = true;
                 break;
             case 'z':
                 sscanf(optarg, CFORMAT, &magnification);
@@ -113,7 +109,7 @@ int main(const int argc, char *argv[]) {
     //const CBASE complex upper_right = re_upper_right + im_upper_right * I;
     const complex_t upper_right = { .re=re_upper_right, .im=im_upper_right};
 
-    grid_t* grid = create_grid(x_res, y_res, lower_left, upper_right);
+    grid_t* grid = create_grid(x_res, y_res, iterations, lower_left, upper_right);
     if(!grid) return 1;
 
 
@@ -136,22 +132,22 @@ int main(const int argc, char *argv[]) {
     enum fractal f = JULIA;
     switch(f){
         case MANDELBROT:
-            mandelbrot_grid(grid, iterations);
+            mandelbrot_grid(grid);
             break;
         case TRICORN:
-            tricorn_grid(grid, iterations);
+            tricorn_grid(grid);
             break;
         case MULTIBROT:
-            multibrot_grid(grid, iterations, degree);
+            multibrot_grid(grid, degree);
             break;
         case MULTICORN:
-            multicorn_grid(grid, iterations, degree);
+            multicorn_grid(grid, degree);
             break;
         case BURNING_SHIP:
-            burning_ship_grid(grid, iterations);
+            burning_ship_grid(grid);
             break;
         case JULIA:
-            julia_grid(grid, iterations, constant, radius);
+            julia_grid(grid, constant, radius);
             break;
         default:
             fprintf(stderr, "Unrecognized fractal\n");
@@ -159,15 +155,18 @@ int main(const int argc, char *argv[]) {
     }
 
     if(verbose)print_grid_info(grid);
-    if(print)print_grid(grid, iterations);
 
     //write grid to file
     if(output_to_file){
         FILE* write_file = fopen("test.grid", "wb");
-        write_grid(write_file , grid);
+        int err = write_grid(write_file , grid);
+        if(err == GRID_WRITE_ERROR){
+            fprintf(stderr, "Error writing occured while writting to file %s\n", output_filename);
+        }
         fclose(write_file);
     }
-    //
+
+    free_grid(grid);
     // //attempt to read grid from file
     // FILE* read_file = fopen("test2.grid", "rb");
     // grid_t* grid2 = read_grid(read_file);

@@ -22,12 +22,13 @@ typedef struct {
     size_t x;
     size_t y;
     size_t size;
+    size_t max_iterations;
     complex_t lower_left;
     complex_t upper_right;
     size_t* data;
 } grid_t;
 
-grid_t* create_grid(const size_t x, const size_t y, complex_t lower_left, complex_t upper_right);
+grid_t* create_grid(const size_t x, const size_t y, const size_t max_iterations, complex_t lower_left, complex_t upper_right);
 void set_grid(grid_t* grid, const size_t val);
 grid_t* copy_grid(const grid_t* grid);
 void free_grid(grid_t* grid);
@@ -38,6 +39,6 @@ CBASE complex grid_to_complex(const grid_t* grid, const size_t index);
 void zoom_grid(grid_t* grid, const CBASE magnification);
 
 void print_grid_info(const grid_t* grid);
-void print_grid(const grid_t* grid, const size_t iterations);
+void print_grid(const grid_t* grid);
 int write_grid(FILE* file, const grid_t* grid);
 grid_t* read_grid(FILE* file);

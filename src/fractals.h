@@ -17,19 +17,19 @@ enum fractal {
 };
 
 size_t mandelbrot(const CBASE complex z0, const size_t max_iterations);
-void mandelbrot_grid(grid_t* grid, const size_t max_iterations);
+void mandelbrot_grid(grid_t* grid);
 
 size_t tricorn(const CBASE complex z0, const size_t max_iterations);
-void tricorn_grid(grid_t* grid, const size_t max_iterations);
+void tricorn_grid(grid_t* grid);
 
 size_t burning_ship(const CBASE complex z0, const size_t max_iterations);
-void burning_ship_grid(grid_t* grid, const size_t max_iterations);
+void burning_ship_grid(grid_t* grid);
 
 size_t multibrot(const CBASE complex z0, const size_t max_iterations, const double d);
-void multibrot_grid(grid_t* grid, const size_t max_iterations, const double d);
+void multibrot_grid(grid_t* grid, const double d);
 
 size_t multicorn(const CBASE complex z0, const size_t max_iterations, const double d);
-void multicorn_grid(grid_t* grid, const size_t max_iterations, const double d);
+void multicorn_grid(grid_t* grid, const double d);
 
 size_t julia(const CBASE complex z0, const CBASE complex c, const size_t max_iterations, const double R);
-void julia_grid(grid_t* grid, const size_t max_iterations, const complex_t c, const double R);
+void julia_grid(grid_t* grid, const complex_t c, const double R);

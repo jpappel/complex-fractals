@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <setjmp.h>
 #include "grids.h"
 
 static inline bool equal_complex_t(const complex_t z1, const complex_t z2){
@@ -11,7 +12,7 @@ static inline bool equal_complex_t(const complex_t z1, const complex_t z2){
 /*
  * Creates a grid for storing the results of the escape algorithm
  */
-grid_t* create_grid(const size_t x, const size_t y, complex_t lower_left, complex_t upper_right){
+grid_t* create_grid(const size_t x, const size_t y, const size_t max_iterations, complex_t lower_left, complex_t upper_right){
     if(x <= 0 || y <= 0) return NULL;
 
     const size_t size = x * y;
@@ -32,6 +33,7 @@ grid_t* create_grid(const size_t x, const size_t y, complex_t lower_left, comple
         .x = x,
         .y = y,
         .size = x*y,
+        .max_iterations = max_iterations,
         .lower_left = lower_left,
         .upper_right = upper_right,
         .data = data
@@ -55,7 +57,7 @@ void set_grid(grid_t* grid, const size_t val){
 grid_t* copy_grid(const grid_t* grid){
     if(!grid || !grid->data) return NULL;
 
-    grid_t* grid_copy = create_grid(grid->x, grid->y, grid->lower_left, grid->upper_right);
+    grid_t* grid_copy = create_grid(grid->x, grid->y, grid->max_iterations, grid->lower_left, grid->upper_right);
     if(!grid_copy) return NULL;
 
     memcpy(grid_copy->data, grid->data, grid->size);
@@ -84,7 +86,8 @@ bool grid_equal(const grid_t* grid1_p, const grid_t* grid2_p){
     const bool lowers_equal = equal_complex_t(grid1.lower_left, grid2.lower_left);
     const bool uppers_equal = equal_complex_t(grid1.upper_right, grid2.upper_right);
     const bool dimensions_equal = grid1.x == grid2.x && grid1.y == grid2.y;
-    return lowers_equal && uppers_equal && dimensions_equal && memcmp(grid1.data, grid2.data, grid1.size) == 0;
+    return lowers_equal && uppers_equal && grid1.max_iterations == grid2.max_iterations &&
+        dimensions_equal && memcmp(grid1.data, grid2.data, grid1.size) == 0;
 }
 
 /*
@@ -136,6 +139,7 @@ CBASE complex grid_to_complex(const grid_t* grid_p, const size_t index) {
  * Resets all grid values to 0
  */
 void zoom_grid(grid_t* restrict grid, const CBASE magnification){
+    //FIXME: not impelemnted correctly
     set_grid(grid, 0);
     // const CBASE complex upper_right = grid->upper_right;
     const complex_t upper_right = grid->upper_right;
@@ -172,8 +176,9 @@ void zoom_grid(grid_t* restrict grid, const CBASE magnification){
  * The .grid format is a binary file format
  * The first 3 bytes of the file are a magic number defined in grids.h
  * The next 16 bytes are the grid dimensions (x then y)
- * The next 2 bytes are the size of a grid point in bytes
- * Following are bytes are the bounding of the complex region (lower_left then upper_right)
+ * The next 8 bytes is the max_iterations
+ * The next 8 bytes are the size of a grid point in bytes
+ * The next 2*precision bytes are the lower left and upper right corners
  * The rest of the file is the data for the grid, which should be exactly x*y*8 bytes
  */
 int write_grid(FILE* restrict file, const grid_t *grid){
@@ -185,16 +190,16 @@ int write_grid(FILE* restrict file, const grid_t *grid){
     magic_num[0] = 0xA6;
     magic_num[1] = 0x00;
     magic_num[2] = 0x5E;
-    // for(size_t i = 0; i < 3; i++){
-    //     magic_num[i] = (GRID_MAGIC_NUMBER >> (2*i)) & 0xFF;
-    // }
+    const size_t precision = sizeof(complex_t);
 
     if(fwrite(magic_num, 1, 3, file) != 3) return GRID_WRITE_ERROR;
 
     if(fwrite(&grid->x, sizeof(size_t), 1, file) != 1 ||
        fwrite(&grid->y, sizeof(size_t), 1, file) != 1 ||
-       fwrite(&grid->lower_left, sizeof(CBASE complex), 1, file) != 1 ||
-       fwrite(&grid->upper_right, sizeof(CBASE complex), 1, file) != 1){
+       fwrite(&grid->max_iterations, sizeof(size_t), 1, file) != 1 ||
+       fwrite(&precision, sizeof(size_t), 1, file) != 1 ||
+       fwrite(&grid->lower_left, precision, 1, file) != 1 ||
+       fwrite(&grid->upper_right, precision, 1, file) != 1){
         return GRID_WRITE_ERROR;
     }
 
@@ -214,9 +219,11 @@ void print_grid_info(const grid_t* grid){
         return;
     }
 
+    printf("Precision\t%zu\n", sizeof(CBASE));
     printf("x\t%zu\n", grid->x);
     printf("y\t%zu\n", grid->y);
     printf("size\t%zu\n", grid->size);
+    printf("Max Iterations\t%zu\n", grid->max_iterations);
     printf("lower_left\t"CFORMAT"+ "CFORMAT"I\n", grid->lower_left.re, grid->lower_left.im);
     printf("upper_right\t"CFORMAT"+ "CFORMAT"I\n", grid->upper_right.re, grid->upper_right.im);
 
@@ -226,9 +233,10 @@ void print_grid_info(const grid_t* grid){
 /*
  * Attempts an ASCII print of the grid
  */
-void print_grid(const grid_t* grid, const size_t iterations){
+void print_grid(const grid_t* grid){
     const size_t size = grid->size;
     const size_t x_res = grid->x;
+    const size_t iterations = grid->max_iterations;
     const size_t* data = grid->data;
 
     //TODO: set values in output buffer rather than multiple printf calls
@@ -276,6 +284,8 @@ grid_t* read_grid(FILE* restrict file){
     unsigned char magic_num[3];
     size_t read_count = fread(magic_num, 1, 3, file);
 
+    jmp_buf file_read_error;
+
     if(read_count != 3){
         perror("Error reading file\n");
         return NULL;
@@ -285,38 +295,33 @@ grid_t* read_grid(FILE* restrict file){
         return NULL;
     }
 
-    size_t x = 0;
-    size_t y = 0;
-    read_count = fread(&x, sizeof(size_t), 1, file);
-    if(read_count != 1){
-        perror("Error reading file\n");
-        return NULL;
-    }
-    read_count = fread(&y, sizeof(size_t), 1, file);
-    if(read_count != 1){
+    if(setjmp(file_read_error)){
         perror("Error reading file\n");
         return NULL;
     }
 
-    //FIXME: this will read correctly now
+    size_t x = 0;
+    size_t y = 0;
+    size_t max_iterations = 0;
+    size_t precision = 0;
+    if(fread(&x, sizeof(size_t), 1, file) != 1){ longjmp(file_read_error, 1); }
+    if(fread(&y, sizeof(size_t), 1, file) != 1){ longjmp(file_read_error, 1); }
+    if(fread(&max_iterations, sizeof(size_t), 1, file) != 1){ longjmp(file_read_error, 1); }
+    if(fread(&precision, sizeof(size_t), 1, file) != 1){ longjmp(file_read_error, 1) ; }
+
+    if(precision != sizeof(complex_t)){
+        fprintf(stderr, "File's precisions does not match programs: %zu != %zu\n", precision, sizeof(complex_t));
+        longjmp(file_read_error, 1);
+    }
+
     complex_t lower_left;
     complex_t upper_right;
-    // CBASE complex lower_left = 0;
-    // CBASE complex upper_right = 0; 
-    read_count = fread(&lower_left, sizeof(CBASE complex), 1, file);
-    if(read_count != 1){
-        perror("Error reading file\n");
-        return NULL;
-    }
-    read_count = fread(&upper_right, sizeof(CBASE complex), 1, file);
-    if(read_count != 1){
-        perror("Error reading file\n");
-        return NULL;
-    }
+    if(fread(&lower_left, sizeof(complex_t), 1, file) != 1){ longjmp(file_read_error, 1); }
+    if(fread(&upper_right, sizeof(complex_t), 1, file) != 1){ longjmp(file_read_error, 1); }
 
     //TODO: look into mmaping the file to data, offseting by the bounding and resolution information
     //      this would likely require an alloc_grid function, similar to jeff's implementation in hw03
-    grid_t* grid = create_grid(x, y, lower_left, upper_right);
+    grid_t* grid = create_grid(x, y, max_iterations, lower_left, upper_right);
     if(!grid){
         return NULL;
     }
