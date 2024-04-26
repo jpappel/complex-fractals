@@ -44,6 +44,6 @@ CBASE complex grid_to_complex(const grid_t* grid, const size_t index);
 void zoom_grid(grid_t* grid, const CBASE magnification);
 
 void print_grid_info(const grid_t* grid);
-void print_grid(const grid_t* grid);
+void print_grid(FILE* file, const grid_t* grid);
 int write_grid(FILE* file, const grid_t* grid);
 grid_t* read_grid(FILE* file);

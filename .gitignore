@@ -1,3 +1,6 @@
+# grid files
+*.grid
+
 # Presentation Stuff
 build/*
 *.html

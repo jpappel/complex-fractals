@@ -193,17 +193,21 @@ int main(const int argc, char *argv[]) {
     }
 
     //use "safer" versions of c string functions
-    if(strncmp(output_filename, "-", 1) && strnlen(output_filename, 16) == 1){
+    //likely aren't necessary unless a user can pass non-null terminated strings as arguments, but that would likely break something up in getopt
+    if(output_filename[0] == '-' && strnlen(output_filename, 16) == 1){
         if(write_grid(stdout, grid) == GRID_WRITE_ERROR){
-            fprintf(stderr, "Error writing occured while writting to file %s\n", output_filename);
+            fprintf(stderr, "Error occured while writting to file %s\n", output_filename);
         }
     }
     else {
         FILE* file = fopen(output_filename, "wb");
-        if(write_grid(file, grid) == GRID_WRITE_ERROR){
-            fprintf(stderr, "Error writing occured while writting to file %s\n", output_filename);
+        if(!file){
+            perror("Error occured while trying to write");
         }
-            fclose(file);
+        else if(write_grid(file, grid) == GRID_WRITE_ERROR){
+            fprintf(stderr, "Error occured while writting to file %s\n", output_filename);
+        }
+        fclose(file);
     }
 
     free(params);

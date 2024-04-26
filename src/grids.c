@@ -233,7 +233,7 @@ void print_grid_info(const grid_t* grid){
 /*
  * Attempts an ASCII print of the grid
  */
-void print_grid(const grid_t* grid){
+void print_grid(FILE* file, const grid_t* grid){
     const size_t size = grid->size;
     const size_t x_res = grid->x;
     const size_t iterations = grid->max_iterations;
@@ -241,15 +241,18 @@ void print_grid(const grid_t* grid){
 
     //TODO: set values in output buffer rather than multiple printf calls
     //      the buffer needs to be larger to hold newlines
-    // char* output_buffer = malloc(size);
-    // if(!output_buffer){
-    //     fprintf(stderr, "Failed to allocate output buffer for %zu points\n");
-    //     return;
-    // }
+    char* output_buffer = malloc(size + grid->y-1);
+    if(!output_buffer){
+        fprintf(stderr, "Failed to allocate output buffer for %zu points\n", size);
+        return;
+    }
+
+    setvbuf(file, output_buffer, _IOFBF, size + grid->y - 1);
 
     const char point_types[] = { ' ', '.', '*', '%', '#'};
     size_t bin_width = iterations/3;
     size_t last_bin = iterations - bin_width;
+    char* buffer_ptr = output_buffer;
     char point;
 
     for(size_t i = 0; i < size; i++){
@@ -269,8 +272,10 @@ void print_grid(const grid_t* grid){
         else {
             point = point_types[2];
         }
-        printf("%c%s", point, (i % x_res == x_res - 1) ? "\n" : "");
+        fprintf(file ,"%c%s", point, (i % x_res == x_res - 1) ? "\n" : "");
     }
+    fflush(file);
+    free(output_buffer);
 }
 
 /*
