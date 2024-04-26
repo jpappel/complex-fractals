@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+
+# serial
+for script in analysis/scripts/serial/*; do
+    sbatch -a1-3 $script
+done
+
+# shared
+for script in analysis/scripts/shared/*; do
+    sbatch -a1-5 $script
+done
+
+# cuda
+for script in analysis/scripts/cuda/*; do
+    sbatch -a1-5 $script
+done

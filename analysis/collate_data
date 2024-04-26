@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+echo "program,fractal,degree,constant_real,constant_imag,radius,max_iterations,horizontal_samples,vertical_samples,lower_real,lower_imag,upper_real,upper_imag,runtime,threads,grid_size" | \
+    cat - analysis/data/*.csv > analysis/data.csv
