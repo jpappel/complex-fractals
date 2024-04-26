@@ -94,8 +94,8 @@ size_t burning_ship(const thrust::complex<CBASE> z0, const size_t max_iterations
     thrust::complex<CBASE> z_mod;
     size_t iteration = 0;
     while(thrust::abs(z) <= 2 && iteration < max_iterations){
-        z_mod = thrust::complex<CBASE>(thrust::abs(z.real()), thrust::abs(z.imag()));
-        z = z_mod * zmod + z0;
+        z_mod = thrust::complex<CBASE>(fabs(z.real()), fabs(z.imag()));
+        z = z_mod * z_mod + z0;
         iteration++;
     }
     return iteration;
@@ -162,7 +162,7 @@ size_t julia(const thrust::complex<CBASE> z0, const size_t max_iterations, const
 }
 
 __global__
-void julia_kernel(size_t* grid_data, const thrust:complex<CBASE> constant, const double radius, const size_t max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
+void julia_kernel(size_t* grid_data, const thrust::complex<CBASE> constant, const double radius, const size_t max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
     SET_ROW_COL;
 
     const auto z = grid_to_complex(lower_left, upper_right, row, col, rows, cols);
@@ -281,13 +281,12 @@ void multicorn_grid(grid_t* grid, const grid_gen_params* params){
 }
 
 void julia_grid(grid_t* grid, const grid_gen_params* params){
-    const complex_t constant = params->cr.constant;
+    thrust::complex<CBASE> constant(params->cr.constant.re, params->cr.constant.im);
     const double radius = params->cr.radius;
     const size_t size = grid->size;
     const size_t rows = grid->y;
     const size_t cols = grid->x;
     const size_t max_iterations = grid->max_iterations;
-    const double degree = params->degree;
     thrust::complex<CBASE> lower_left(grid->lower_left.re, grid->lower_left.im);
     thrust::complex<CBASE> upper_right(grid->upper_right.re, grid->upper_right.im);
 
@@ -295,7 +294,7 @@ void julia_grid(grid_t* grid, const grid_gen_params* params){
     CHECK(cudaMalloc(&d_grid_data, size*sizeof(size_t)));
     dim3 block_size(BLOCK_SIZE_X, BLOCK_SIZE_Y);
     dim3 grid_size((cols + block_size.x - 1) / block_size.x, (rows + block_size.y - 1) / block_size.y);
-    multicorn_kernel<<<grid_size, block_size>>>(d_grid_data, constant, radius, max_iterations, lower_left, upper_right, rows, cols);
+    julia_kernel<<<grid_size, block_size>>>(d_grid_data, constant, radius, max_iterations, lower_left, upper_right, rows, cols);
     CHECK(cudaDeviceSynchronize());
 
     CHECK(cudaMemcpy(grid->data, d_grid_data, size*sizeof(size_t), cudaMemcpyDeviceToHost));
