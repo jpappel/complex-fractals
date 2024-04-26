@@ -252,7 +252,6 @@ void print_grid(FILE* file, const grid_t* grid){
     const char point_types[] = { ' ', '.', '*', '%', '#'};
     size_t bin_width = iterations/3;
     size_t last_bin = iterations - bin_width;
-    char* buffer_ptr = output_buffer;
     char point;
 
     for(size_t i = 0; i < size; i++){

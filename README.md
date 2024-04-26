@@ -8,6 +8,8 @@ Each version of the complex fractal generator has its own dependencies.
 The serial version should compile on all systems that support complex arithmetic.
 
 The shared version requires a compiler with [OpenMP](https://www.openmp.org/) support.
+The CUDA version requires the `nvcc` compiler and `thrust libraries`.
+For better performance on your machine, change the flag `-arch=sm_86` in `NVCFLAGS` in the makefile to your gpu's compute capability.
 
 ### Building
 
@@ -19,7 +21,7 @@ make
 
 If you wish to compile with additional floating point precision, add `-DEXTENDED_PRECISION` to `CPPFLAGS` in the makefile.
 
-**NOTE:** extended precision is **NOT** supported in the cuda version.
+**NOTE:** extended precision is **NOT** supported in the CUDA version.
 
 ### Running
 
@@ -32,10 +34,10 @@ The performance flag outputs information in the format of:
 ```
 
 Note that the runtime is an average runtime from multiple runs.
-The number of runs can be adjusted directly in `src/fractals.c` in `NUM_RUNS` or passed set in `CPPFLAGS` by adding `-DNUM_RUNS=N`
+The number of runs can be adjusted directly in `src/fractals.c` in `NUM_RUNS` or set in `CPPFLAGS` by adding `-DNUM_RUNS=N`.
 
 ```
-Usage: PROGRAM [-v] [-i iterations] [-x x_res] [-y y_res] [-z magnification] [-l lower_left] [-u upper_right] [-o output_grid] -f fractal
+Usage: <PROGRAM> [-v] [-i iterations] [-x x_res] [-y y_res] [-z magnification] [-d degree] [-c constant] [-r radius] [-l lower_left] [-u upper_right] [-o output_grid] -f fractal
 Options:
   -i, --iterations <value>        the number of iterations (default: 100)
   -x, --x-res <value>             the horizontal resolution (default: terminal width)
@@ -43,6 +45,9 @@ Options:
   -l, --lower-left <value>        Set the lower left corner of the fractal area (default: -2-2i)
   -u, --upper-right <value>       Set the upper right corner of the fractal area (default: 2+2i)
   -z, --magnification <value>     Set the magnification factor (default: 1)
+  -d, --degree <value>            Set the degree for fractals that use it (default: 1)
+  -c, --constant <value>          Set the constant for fractals that use it (default: 0+0i)
+  -r, --radius <value>            Set the radius for fractals that use it (default: 2)
   -o, --output <filename>         the output filename (default: fractal.grid)
   -f, --fractal <type>            the fractal type (default: mandelbrot)
       supported fractals: mandelbrot, tricorn, multibrot, multicorn, burning_ship, julia
@@ -50,6 +55,16 @@ Options:
   -v, --verbose                   verbose output
   -h, --help                      prints this help message
 ```
+
+#### Examples
+
+`build/shared-fractals -x2000 -y2000 -z 2 -o burning_ship.grid -f burning_ship`
+
+Generates a 2000x2000 burning ship fractal grid zoomed in 2x and saves it to burning_ship.grid
+
+`build/serial-fractals -x500 -y500 -i35 -c 0.285+0.01i -r 20 -o julia.grid -f julia`
+
+Generates a 500x500 julia fractal grid which has a maximum of 30 iterations for $c = 0.285 + 0.01i$ and a radius of 20 to julia.grid.
 
 ## Visualizations
 
