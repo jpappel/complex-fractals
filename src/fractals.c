@@ -28,7 +28,7 @@ void print_help(){
             "  -l, --lower-left <value>        Set the lower left corner of the fractal area (default: -2.0+-2.0i)\n"
             "  -u, --upper-right <value>       Set the upper right corner of the fractal area (default: 2.0+2.0i)\n"
             "  -z, --magnification <value>     Set the magnification factor (default: 1)\n"
-            "  -d, --degree <value>            Set the degree for fractals that use it (default: 1)\n"
+            "  -d, --degree <value>            Set the degree for fractals that use it (default: 2)\n"
             "  -c, --constant <value>          Set the constant for fractals that use it (default: 0+0i)\n"
             "  -r, --radius <value>            Set the radius for fractals that use it (default: 2)\n"
             "  -o, --output <filename>         the output filename (default: fractal.grid)\n"
@@ -84,7 +84,7 @@ int main(const int argc, char *argv[]) {
     //degree is mutually exclusive with constant and radius
     bool param_is_degree = false;
     bool param_is_cr = false;
-    CBASE degree = 1;
+    CBASE degree = 2;
     complex_t constant = { .re = 0, .im = 0};
     double radius = 2;
 
@@ -264,9 +264,9 @@ int main(const int argc, char *argv[]) {
 
     if(performance){
         double time = time_fractal(generator, grid, params);
-        printf("%s,%s,%hhu,%zu,%zu,"
-                CFORMAT","CFORMAT","CFORMAT","CFORMAT",%f\n",
-                argv[0], fractal_name, iterations, x_res, y_res,
+        printf("%s,%s,%lf,"CFORMAT","CFORMAT",%lf,%hhu,%zu,%zu,",
+                argv[0], fractal_name, degree, constant.re, constant.im, radius, iterations, x_res, y_res);
+        printf(CFORMAT","CFORMAT","CFORMAT","CFORMAT",%f\n",
                 lower_left.re, lower_left.im, upper_right.re, upper_right.im, time);
     }
 

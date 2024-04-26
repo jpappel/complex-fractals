@@ -30,7 +30,7 @@ All versions of the program support the same command line arguments.
 
 The performance flag outputs information in the format of:
 ```
-<PROGRAM>,<FRACTAL>,<MAX_ITERATIONS>,<HORIZONTAL_SAMPLES>,<VERTICAL_SAMPLES>,<LOWER_REAL>,<LOWER_IMAG>,<UPPER_REAL>,<UPPER_IMAG>,<RUNTIME>
+<PROGRAM>,<FRACTAL>,<DEGREE>,<CONSTANT_REAL>,<CONSTANT_IMAG>,<RADIUS>,<MAX_ITERATIONS>,<HORIZONTAL_SAMPLES>,<VERTICAL_SAMPLES>,<LOWER_REAL>,<LOWER_IMAG>,<UPPER_REAL>,<UPPER_IMAG>,<RUNTIME>
 ```
 
 Note that the runtime is an average runtime from multiple runs.
@@ -45,7 +45,7 @@ Options:
   -l, --lower-left <value>        Set the lower left corner of the fractal area (default: -2-2i)
   -u, --upper-right <value>       Set the upper right corner of the fractal area (default: 2+2i)
   -z, --magnification <value>     Set the magnification factor (default: 1)
-  -d, --degree <value>            Set the degree for fractals that use it (default: 1)
+  -d, --degree <value>            Set the degree for fractals that use it (default: 2)
   -c, --constant <value>          Set the constant for fractals that use it (default: 0+0i)
   -r, --radius <value>            Set the radius for fractals that use it (default: 2)
   -o, --output <filename>         the output filename (default: fractal.grid)
