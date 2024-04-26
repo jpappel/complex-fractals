@@ -26,8 +26,11 @@ If you wish to compile with additional floating point precision, add `-DEXTENDED
 Any version of the program can be used to generate a visualizer compatible `.grid` file.
 All versions of the program support the same command line arguments.
 
-The performance flag outputs information in the format of
-`<PROGRAM>,<FRACTAL>,<HORIZONTAL_SAMPLES>,<VERTICAL_SAMPLES>,<LOWER_REAL>,<LOWER_IMAG>,<UPPER_REAL>,<UPPER_IMAG>,<RUNTIME>`.
+The performance flag outputs information in the format of:
+```
+<PROGRAM>,<FRACTAL>,<MAX_ITERATIONS>,<HORIZONTAL_SAMPLES>,<VERTICAL_SAMPLES>,<LOWER_REAL>,<LOWER_IMAG>,<UPPER_REAL>,<UPPER_IMAG>,<RUNTIME>
+```
+
 Note that the runtime is an average runtime from multiple runs.
 The number of runs can be adjusted directly in `src/fractals.c` in `NUM_RUNS` or passed set in `CPPFLAGS` by adding `-DNUM_RUNS=N`
 
