@@ -3,7 +3,9 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdbool.h>
+#ifndef __NVCC__
 #include <complex.h>
+#endif
 #include "precision.h"
 
 //grid write errors
@@ -35,7 +37,10 @@ void free_grid(grid_t* grid);
 bool grid_equal(const grid_t* grid1, const grid_t* grid2);
 bool grid_allclose(const grid_t* grid1, const grid_t* grid2, const size_t max_error);
 
+#ifndef __NVCC__
 CBASE complex grid_to_complex(const grid_t* grid, const size_t index);
+#endif
+
 void zoom_grid(grid_t* grid, const CBASE magnification);
 
 void print_grid_info(const grid_t* grid);

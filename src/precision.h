@@ -7,6 +7,7 @@
 
 #ifdef EXTENDED_PRECISION
 
+#warning Compiling with extended precision, will lead to code incompatibility
 #define CBASE long double
 #define CREAL creall
 #define CIMAG cimagl
