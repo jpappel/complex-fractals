@@ -67,7 +67,7 @@ int main(const int argc, char *argv[]) {
     bool verbose = false;
     bool performance = false;
     grid_gen_params* params;
-    char* fractal_name;
+    char* fractal_name = "mandelbrot";
     fractal_generator generator = mandelbrot_grid;
     char* output_filename = "fractal.grid";
 
@@ -176,13 +176,14 @@ int main(const int argc, char *argv[]) {
         zoom_grid(grid, magnification);
     }
 
-    // TODO: make additional param to fractals that take these in
-
     generator(grid, params);
 
     if(performance){
         double time = time_fractal(generator, grid, params);
-        printf("%s,%f\n", fractal_name, time);
+        printf("%s,%s,%zu,%zu,"
+                CFORMAT","CFORMAT","CFORMAT","CFORMAT",%f\n",
+                argv[0], fractal_name, x_res, y_res,
+                lower_left.re, lower_left.im, upper_right.re, upper_right.im, time);
     }
 
     if(verbose){
