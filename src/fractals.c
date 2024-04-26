@@ -66,7 +66,7 @@ int main(const int argc, char *argv[]) {
     CBASE magnification = 1;
     bool verbose = false;
     bool performance = false;
-    grid_gen_params* params;
+    grid_gen_params* params = NULL;
     char* fractal_name = "mandelbrot";
     fractal_generator generator = mandelbrot_grid;
     char* output_filename = "fractal.grid";
@@ -114,31 +114,31 @@ int main(const int argc, char *argv[]) {
                     generator = mandelbrot_grid;
                 }
                 else if(strncmp(optarg, "tricorn", strlen("tricorn")) == 0) {
-                    fractal_name = "tricorn";
-                    generator = tricorn_grid;
+                   fractal_name = "tricorn";
+                   generator = tricorn_grid;
                 }
                 else if(strncmp(optarg, "multibrot", strlen("multibrot")) == 0) {
-                    fractal_name = "multibrot";
-                    generator = multibrot_grid;
-                    params = malloc(sizeof(grid_gen_params));
-                    params->degree = 3;
+                   fractal_name = "multibrot";
+                   generator = multibrot_grid;
+                   params = malloc(sizeof(grid_gen_params));
+                   params->degree = 3;
                 }
                 else if(strncmp(optarg, "multicorn", strlen("multicorn")) == 0) {
-                    fractal_name = "multicorn";
-                    generator = multicorn_grid;
-                    params = malloc(sizeof(grid_gen_params));
-                    params->degree = 3;
+                   fractal_name = "multicorn";
+                   generator = multicorn_grid;
+                   params = malloc(sizeof(grid_gen_params));
+                   params->degree = 3;
                 }
                 else if(strncmp(optarg, "burning_ship", strlen("burning_ship")) == 0) {
-                    fractal_name = "burning ship";
-                    generator = burning_ship_grid;
+                   fractal_name = "burning ship";
+                   generator = burning_ship_grid;
                 }
                 else if(strncmp(optarg, "julia", strlen("julia")) == 0) {
-                    fractal_name = "julia";
-                    generator = julia_grid;
-                    params = malloc(sizeof(grid_gen_params));
-                    params->cr.radius = 100;
-                    params->cr.constant = (complex_t){ .re = 0.285, .im = 0.01 };
+                   fractal_name = "julia";
+                   generator = julia_grid;
+                   params = malloc(sizeof(grid_gen_params));
+                   params->cr.radius = 100;
+                   params->cr.constant = (complex_t){ .re = 0.285, .im = 0.01 };
                 }
                 else {
                     fprintf(stderr, "Invalid fractal type: %s, see --help for a list of supported fractals\n", optarg);
@@ -180,9 +180,9 @@ int main(const int argc, char *argv[]) {
 
     if(performance){
         double time = time_fractal(generator, grid, params);
-        printf("%s,%s,%zu,%zu,"
+        printf("%s,%s,%zu,%zu,%zu,"
                 CFORMAT","CFORMAT","CFORMAT","CFORMAT",%f\n",
-                argv[0], fractal_name, x_res, y_res,
+                argv[0], fractal_name, iterations, x_res, y_res,
                 lower_left.re, lower_left.im, upper_right.re, upper_right.im, time);
     }
 
@@ -192,11 +192,19 @@ int main(const int argc, char *argv[]) {
         print_grid_info(grid);
     }
 
-    FILE* file = fopen(output_filename, "wb");
-    if(write_grid(file, grid) == GRID_WRITE_ERROR){
-        fprintf(stderr, "Error writing occured while writting to file %s\n", output_filename);
+    //use "safer" versions of c string functions
+    if(strncmp(output_filename, "-", 1) && strnlen(output_filename, 16) == 1){
+        if(write_grid(stdout, grid) == GRID_WRITE_ERROR){
+            fprintf(stderr, "Error writing occured while writting to file %s\n", output_filename);
+        }
     }
-    fclose(file);
+    else {
+        FILE* file = fopen(output_filename, "wb");
+        if(write_grid(file, grid) == GRID_WRITE_ERROR){
+            fprintf(stderr, "Error writing occured while writting to file %s\n", output_filename);
+        }
+            fclose(file);
+    }
 
     free(params);
     free_grid(grid);

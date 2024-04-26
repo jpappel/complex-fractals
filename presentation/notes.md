@@ -10,6 +10,8 @@
 * Mention how when Mandelbrot initially tried to have his computed image printed, the printers kept removing the "dust" thinking it was a misprint
 * cpus support greater precision than gpus
     * "precision.h"
+* linking cuda object code with c code
+    * c++ mangles names, functions that are to be linked against must be declared extern
 * serial algorithm for computing Mandelbrot set
     * runtime
     * animation where the number of frames are dependent on runtime
