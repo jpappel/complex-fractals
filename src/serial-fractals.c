@@ -8,9 +8,9 @@
  * if the return value is equal to max_iterations, the point lies within the mandelbrot set
  * This is an implementation the escape algorithm
  */
-size_t mandelbrot(const CBASE complex z0, const size_t max_iterations) {
+byte mandelbrot(const CBASE complex z0, const byte max_iterations) {
   CBASE complex z = z0;
-  size_t iteration = 0;
+  byte iteration = 0;
 
   while (CABS(z) <= 2 && iteration < max_iterations) {
     z = z * z + z0;
@@ -24,8 +24,8 @@ size_t mandelbrot(const CBASE complex z0, const size_t max_iterations) {
  */
 void mandelbrot_grid(grid_t* grid, const grid_gen_params* params){
     const size_t size = grid->size;
-    const size_t max_iterations = grid->max_iterations;
-    size_t* data = grid->data;
+    const byte max_iterations = grid->max_iterations;
+    byte* data = grid->data;
 
     for(size_t i = 0; i < size; i++){
         data[i] = mandelbrot(grid_to_complex(grid, i), max_iterations);
@@ -37,9 +37,9 @@ void mandelbrot_grid(grid_t* grid, const grid_gen_params* params){
  * if the return value is equal to max_iterations, the point lies within the tricorn set
  * This is nearly identical to mandelbrot, except for the complex conjugate
  */
-size_t tricorn(const CBASE complex z0, const size_t max_iterations){
+byte tricorn(const CBASE complex z0, const byte max_iterations){
     CBASE complex z = z0;
-    size_t iteration = 0;
+    byte iteration = 0;
     while(CABS(z) <= 2 && iteration < max_iterations){
         z = CONJ(z * z) + z0;
         iteration++;
@@ -52,8 +52,8 @@ size_t tricorn(const CBASE complex z0, const size_t max_iterations){
  */
 void tricorn_grid(grid_t* grid, const grid_gen_params* params){
     const size_t size = grid->size;
-    const size_t max_iterations = grid->max_iterations;
-    size_t* data = grid->data;
+    const byte max_iterations = grid->max_iterations;
+    byte* data = grid->data;
 
     for(size_t i = 0; i < size; i++){
         data[i] = tricorn(grid_to_complex(grid, i), max_iterations);
@@ -64,10 +64,10 @@ void tricorn_grid(grid_t* grid, const grid_gen_params* params){
  * Computes the number of iterations it takes for a point z0 to become unbounded
  * if the return value is equal to max_iterations, the point lies within the burningship set (oh no! I hope they have fire safety gear)
  */
-size_t burning_ship(const CBASE complex z0, const size_t max_iterations) {
+byte burning_ship(const CBASE complex z0, const byte max_iterations) {
   CBASE complex z = z0;
   CBASE complex z_mod;
-  size_t iteration = 0;
+  byte iteration = 0;
 
   while (CABS(z) <= 2 && iteration < max_iterations) {
     z_mod = RABS(CREAL(z)) + RABS(CIMAG(z))*I;
@@ -82,8 +82,8 @@ size_t burning_ship(const CBASE complex z0, const size_t max_iterations) {
  */
 void burning_ship_grid(grid_t* grid, const grid_gen_params* params){
     const size_t size = grid->size;
-    const size_t max_iterations = grid->max_iterations;
-    size_t* data = grid->data;
+    const byte max_iterations = grid->max_iterations;
+    byte* data = grid->data;
 
     for(size_t i = 0; i < size; i++){
         data[i] = burning_ship(grid_to_complex(grid, i), max_iterations);
@@ -95,9 +95,9 @@ void burning_ship_grid(grid_t* grid, const grid_gen_params* params){
  * if the return value is equal to max_iterations, the point lies within the multibrot set
  * This is implementation closely matches mandelbrot, but uses cpow which might degrade performance.
  */
-size_t multibrot(const CBASE complex z0, const size_t max_iterations, const double d){
+byte multibrot(const CBASE complex z0, const byte max_iterations, const double d){
     CBASE complex z = z0;
-    size_t iteration = 0;
+    byte iteration = 0;
     while(CABS(z) <= 2 && iteration < max_iterations){
         z = CPOW(z, d) + z0;
         iteration++;
@@ -112,8 +112,8 @@ size_t multibrot(const CBASE complex z0, const size_t max_iterations, const doub
 void multibrot_grid(grid_t* grid, const grid_gen_params* params){
     const double d = params->degree;
     const size_t size = grid->size;
-    const size_t max_iterations = grid->max_iterations;
-    size_t* data = grid->data;
+    const byte max_iterations = grid->max_iterations;
+    byte* data = grid->data;
     for(size_t i = 0; i < size; i ++){
         data[i] = multibrot(grid_to_complex(grid, i), max_iterations, d);
     }
@@ -124,9 +124,9 @@ void multibrot_grid(grid_t* grid, const grid_gen_params* params){
  * if the return value is equal to max_iterations, the point lies within the multicorn set
  * This function is to tricorn as multibrot is to mandelbrot
  */
-size_t multicorn(const CBASE complex z0, const size_t max_iterations, const double d){
+byte multicorn(const CBASE complex z0, const byte max_iterations, const double d){
     CBASE complex z = z0;
-    size_t iteration = 0;
+    byte iteration = 0;
     while(CABS(z) <= 2 && iteration < max_iterations){
         z = CONJ(CPOW(z, d)) + z0;
         iteration++;
@@ -140,8 +140,8 @@ size_t multicorn(const CBASE complex z0, const size_t max_iterations, const doub
 void multicorn_grid(grid_t* grid, const grid_gen_params* params){
     const double d = params->degree;
     const size_t size = grid->size;
-    const size_t max_iterations = grid->max_iterations;
-    size_t* data = grid->data;
+    const byte max_iterations = grid->max_iterations;
+    byte* data = grid->data;
     for(size_t i = 0; i < size; i ++){
         data[i] = multicorn(grid_to_complex(grid, i), max_iterations, d);
     }
@@ -153,10 +153,10 @@ void multicorn_grid(grid_t* grid, const grid_gen_params* params){
  *
  * This behaves weirdly, needs a very small number of iterations to be visibile
  */
-size_t julia(const CBASE complex z0, const CBASE complex c, const size_t max_iterations, const double R){
+byte julia(const CBASE complex z0, const CBASE complex c, const byte max_iterations, const double R){
     double complex z = z0;
 
-    size_t iteration = 0;
+    byte iteration = 0;
     while(CABS(z) < R && iteration < max_iterations){
         z = z * z + c;
         iteration++;
@@ -168,9 +168,9 @@ void julia_grid(grid_t* grid, const grid_gen_params* params){
     const complex_t constant = params->cr.constant;
     const double radius = params->cr.radius;
     const size_t size = grid->size;
-    const size_t max_iterations = grid->max_iterations;
+    const byte max_iterations = grid->max_iterations;
     const CBASE complex c = constant.re + constant.im * I;
-    size_t* data = grid->data;
+    byte* data = grid->data;
     for(size_t i = 0; i <size; i++){
         data[i] = julia(grid_to_complex(grid, i), c, max_iterations, radius);
     }

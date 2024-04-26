@@ -49,9 +49,9 @@ thrust::complex<CBASE> grid_to_complex(const thrust::complex<CBASE> lower_left, 
 }
 
 __device__
-size_t mandelbrot(const thrust::complex<CBASE> z0, const size_t max_iterations){
+byte mandelbrot(const thrust::complex<CBASE> z0, const byte max_iterations){
     thrust::complex<CBASE> z = z0;
-    size_t iteration = 0;
+    byte iteration = 0;
     while(thrust::abs(z) <= 2 && iteration < max_iterations){
         z = z*z + z0;
         iteration++;
@@ -60,7 +60,7 @@ size_t mandelbrot(const thrust::complex<CBASE> z0, const size_t max_iterations){
 }
 
 __global__
-void mandelbrot_kernel(size_t* grid_data, const size_t max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
+void mandelbrot_kernel(byte* grid_data, const byte max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
     SET_ROW_COL;
 
     const auto z = grid_to_complex(lower_left, upper_right, row, col, rows, cols);
@@ -69,9 +69,9 @@ void mandelbrot_kernel(size_t* grid_data, const size_t max_iterations, const thr
 }
 
 __device__ 
-size_t tricorn(const thrust::complex<CBASE> z0, const size_t max_iterations){
+byte tricorn(const thrust::complex<CBASE> z0, const byte max_iterations){
     thrust::complex<CBASE> z = z0;
-    size_t iteration = 0;
+    byte iteration = 0;
     while(thrust::abs(z) <= 2 && iteration < max_iterations){
         z = thrust::conj(z*z) + z0;
         iteration++;
@@ -80,7 +80,7 @@ size_t tricorn(const thrust::complex<CBASE> z0, const size_t max_iterations){
 }
 
 __global__
-void tricorn_kernel(size_t* grid_data, const size_t max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
+void tricorn_kernel(byte* grid_data, const byte max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
     SET_ROW_COL;
 
     const auto z = grid_to_complex(lower_left, upper_right, row, col, rows, cols);
@@ -89,10 +89,10 @@ void tricorn_kernel(size_t* grid_data, const size_t max_iterations, const thrust
 }
 
 __device__
-size_t burning_ship(const thrust::complex<CBASE> z0, const size_t max_iterations){
+byte burning_ship(const thrust::complex<CBASE> z0, const byte max_iterations){
     thrust::complex<CBASE> z = z0;
     thrust::complex<CBASE> z_mod;
-    size_t iteration = 0;
+    byte iteration = 0;
     while(thrust::abs(z) <= 2 && iteration < max_iterations){
         z_mod = thrust::complex<CBASE>(fabs(z.real()), fabs(z.imag()));
         z = z_mod * z_mod + z0;
@@ -102,7 +102,7 @@ size_t burning_ship(const thrust::complex<CBASE> z0, const size_t max_iterations
 }
 
 __global__
-void burning_ship_kernel(size_t* grid_data, const size_t max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
+void burning_ship_kernel(byte* grid_data, const byte max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
     SET_ROW_COL;
 
     const auto z = grid_to_complex(lower_left, upper_right, row, col, rows, cols);
@@ -111,9 +111,9 @@ void burning_ship_kernel(size_t* grid_data, const size_t max_iterations, const t
 }
 
 __device__
-size_t multibrot(const thrust::complex<CBASE> z0, const size_t max_iterations, const double d){
+byte multibrot(const thrust::complex<CBASE> z0, const byte max_iterations, const double d){
     thrust::complex<CBASE> z = z0;
-    size_t iteration = 0;
+    byte iteration = 0;
     while(thrust::abs(z) <= 2 && iteration < max_iterations){
         z = thrust::pow(z, d) + z0;
         iteration++;
@@ -122,7 +122,7 @@ size_t multibrot(const thrust::complex<CBASE> z0, const size_t max_iterations, c
 }
 
 __global__
-void multibrot_kernel(size_t* grid_data, const double degree, const size_t max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
+void multibrot_kernel(byte* grid_data, const double degree, const byte max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
     SET_ROW_COL;
 
     const auto z = grid_to_complex(lower_left, upper_right, row, col, rows, cols);
@@ -131,9 +131,9 @@ void multibrot_kernel(size_t* grid_data, const double degree, const size_t max_i
 }
 
 __device__
-size_t multicorn(const thrust::complex<CBASE> z0, const size_t max_iterations, const double d){
+byte multicorn(const thrust::complex<CBASE> z0, const byte max_iterations, const double d){
     thrust::complex<CBASE> z = z0;
-    size_t iteration = 0;
+    byte iteration = 0;
     while(thrust::abs(z) <= 2 && iteration < max_iterations){
         z = thrust::conj(thrust::pow(z, d)) + z0;
         iteration++;
@@ -142,7 +142,7 @@ size_t multicorn(const thrust::complex<CBASE> z0, const size_t max_iterations, c
 }
 
 __global__
-void multicorn_kernel(size_t* grid_data, const double degree, const size_t max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
+void multicorn_kernel(byte* grid_data, const double degree, const byte max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
     SET_ROW_COL;
 
     const auto z = grid_to_complex(lower_left, upper_right, row, col, rows, cols);
@@ -151,9 +151,9 @@ void multicorn_kernel(size_t* grid_data, const double degree, const size_t max_i
 }
 
 __device__
-size_t julia(const thrust::complex<CBASE> z0, const size_t max_iterations, const thrust::complex<CBASE> c, const double R){
+byte julia(const thrust::complex<CBASE> z0, const byte max_iterations, const thrust::complex<CBASE> c, const double R){
     thrust::complex<CBASE> z = z0;
-    size_t iteration = 0;
+    byte iteration = 0;
     while(thrust::abs(z) <= R && iteration < max_iterations){
         z = z*z + c;
         iteration++;
@@ -162,7 +162,7 @@ size_t julia(const thrust::complex<CBASE> z0, const size_t max_iterations, const
 }
 
 __global__
-void julia_kernel(size_t* grid_data, const thrust::complex<CBASE> constant, const double radius, const size_t max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
+void julia_kernel(byte* grid_data, const thrust::complex<CBASE> constant, const double radius, const byte max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
     SET_ROW_COL;
 
     const auto z = grid_to_complex(lower_left, upper_right, row, col, rows, cols);
@@ -175,12 +175,12 @@ void mandelbrot_grid(grid_t* grid, const grid_gen_params* params){
     const size_t size = grid->size;
     const size_t rows = grid->y;
     const size_t cols = grid->x;
-    const size_t max_iterations = grid->max_iterations;
+    const byte max_iterations = grid->max_iterations;
     thrust::complex<CBASE> lower_left(grid->lower_left.re, grid->lower_left.im);
     thrust::complex<CBASE> upper_right(grid->upper_right.re, grid->upper_right.im);
 
-    size_t* d_grid_data;
-    CHECK(cudaMalloc(&d_grid_data, size*sizeof(size_t)));
+    byte* d_grid_data;
+    CHECK(cudaMalloc(&d_grid_data, size*sizeof(byte)));
     //TODO: find good sizes
     dim3 block_size(BLOCK_SIZE_X, BLOCK_SIZE_Y);
     //dim3 grid_size(0,0);
@@ -188,7 +188,7 @@ void mandelbrot_grid(grid_t* grid, const grid_gen_params* params){
     mandelbrot_kernel<<<grid_size, block_size>>>(d_grid_data, max_iterations, lower_left, upper_right, rows, cols);
     CHECK(cudaDeviceSynchronize());
 
-    CHECK(cudaMemcpy(grid->data, d_grid_data, size*sizeof(size_t), cudaMemcpyDeviceToHost));
+    CHECK(cudaMemcpy(grid->data, d_grid_data, size*sizeof(byte), cudaMemcpyDeviceToHost));
 
     CHECK(cudaFree(d_grid_data));
     CHECK(cudaDeviceReset());
@@ -198,18 +198,18 @@ void tricorn_grid(grid_t* grid, const grid_gen_params* params){
     const size_t size = grid->size;
     const size_t rows = grid->y;
     const size_t cols = grid->x;
-    const size_t max_iterations = grid->max_iterations;
+    const byte max_iterations = grid->max_iterations;
     thrust::complex<CBASE> lower_left(grid->lower_left.re, grid->lower_left.im);
     thrust::complex<CBASE> upper_right(grid->upper_right.re, grid->upper_right.im);
 
-    size_t* d_grid_data;
-    CHECK(cudaMalloc(&d_grid_data, size*sizeof(size_t)));
+    byte* d_grid_data;
+    CHECK(cudaMalloc(&d_grid_data, size*sizeof(byte)));
     dim3 block_size(BLOCK_SIZE_X, BLOCK_SIZE_Y);
     dim3 grid_size((cols + block_size.x - 1) / block_size.x, (rows + block_size.y - 1) / block_size.y);
     tricorn_kernel<<<grid_size, block_size>>>(d_grid_data, max_iterations, lower_left, upper_right, rows, cols);
     CHECK(cudaDeviceSynchronize());
 
-    CHECK(cudaMemcpy(grid->data, d_grid_data, size*sizeof(size_t), cudaMemcpyDeviceToHost));
+    CHECK(cudaMemcpy(grid->data, d_grid_data, size*sizeof(byte), cudaMemcpyDeviceToHost));
 
     CHECK(cudaFree(d_grid_data));
     CHECK(cudaDeviceReset());
@@ -219,18 +219,18 @@ void burning_ship_grid(grid_t* grid, const grid_gen_params* params){
     const size_t size = grid->size;
     const size_t rows = grid->y;
     const size_t cols = grid->x;
-    const size_t max_iterations = grid->max_iterations;
+    const byte max_iterations = grid->max_iterations;
     thrust::complex<CBASE> lower_left(grid->lower_left.re, grid->lower_left.im);
     thrust::complex<CBASE> upper_right(grid->upper_right.re, grid->upper_right.im);
 
-    size_t* d_grid_data;
-    CHECK(cudaMalloc(&d_grid_data, size*sizeof(size_t)));
+    byte* d_grid_data;
+    CHECK(cudaMalloc(&d_grid_data, size*sizeof(byte)));
     dim3 block_size(BLOCK_SIZE_X, BLOCK_SIZE_Y);
     dim3 grid_size((cols + block_size.x - 1) / block_size.x, (rows + block_size.y - 1) / block_size.y);
     burning_ship_kernel<<<grid_size, block_size>>>(d_grid_data, max_iterations, lower_left, upper_right, rows, cols);
     CHECK(cudaDeviceSynchronize());
 
-    CHECK(cudaMemcpy(grid->data, d_grid_data, size*sizeof(size_t), cudaMemcpyDeviceToHost));
+    CHECK(cudaMemcpy(grid->data, d_grid_data, size*sizeof(byte), cudaMemcpyDeviceToHost));
 
     CHECK(cudaFree(d_grid_data));
     CHECK(cudaDeviceReset());
@@ -240,19 +240,19 @@ void multibrot_grid(grid_t* grid, const grid_gen_params* params){
     const size_t size = grid->size;
     const size_t rows = grid->y;
     const size_t cols = grid->x;
-    const size_t max_iterations = grid->max_iterations;
+    const byte max_iterations = grid->max_iterations;
     const double degree = params->degree;
     thrust::complex<CBASE> lower_left(grid->lower_left.re, grid->lower_left.im);
     thrust::complex<CBASE> upper_right(grid->upper_right.re, grid->upper_right.im);
 
-    size_t* d_grid_data;
-    CHECK(cudaMalloc(&d_grid_data, size*sizeof(size_t)));
+    byte* d_grid_data;
+    CHECK(cudaMalloc(&d_grid_data, size*sizeof(byte)));
     dim3 block_size(BLOCK_SIZE_X, BLOCK_SIZE_Y);
     dim3 grid_size((cols + block_size.x - 1) / block_size.x, (rows + block_size.y - 1) / block_size.y);
     multibrot_kernel<<<grid_size, block_size>>>(d_grid_data, degree, max_iterations, lower_left, upper_right, rows, cols);
     CHECK(cudaDeviceSynchronize());
 
-    CHECK(cudaMemcpy(grid->data, d_grid_data, size*sizeof(size_t), cudaMemcpyDeviceToHost));
+    CHECK(cudaMemcpy(grid->data, d_grid_data, size*sizeof(byte), cudaMemcpyDeviceToHost));
 
     CHECK(cudaFree(d_grid_data));
     CHECK(cudaDeviceReset());
@@ -262,19 +262,19 @@ void multicorn_grid(grid_t* grid, const grid_gen_params* params){
     const size_t size = grid->size;
     const size_t rows = grid->y;
     const size_t cols = grid->x;
-    const size_t max_iterations = grid->max_iterations;
+    const byte max_iterations = grid->max_iterations;
     const double degree = params->degree;
     thrust::complex<CBASE> lower_left(grid->lower_left.re, grid->lower_left.im);
     thrust::complex<CBASE> upper_right(grid->upper_right.re, grid->upper_right.im);
 
-    size_t* d_grid_data;
-    CHECK(cudaMalloc(&d_grid_data, size*sizeof(size_t)));
+    byte* d_grid_data;
+    CHECK(cudaMalloc(&d_grid_data, size*sizeof(byte)));
     dim3 block_size(BLOCK_SIZE_X, BLOCK_SIZE_Y);
     dim3 grid_size((cols + block_size.x - 1) / block_size.x, (rows + block_size.y - 1) / block_size.y);
     multicorn_kernel<<<grid_size, block_size>>>(d_grid_data, degree, max_iterations, lower_left, upper_right, rows, cols);
     CHECK(cudaDeviceSynchronize());
 
-    CHECK(cudaMemcpy(grid->data, d_grid_data, size*sizeof(size_t), cudaMemcpyDeviceToHost));
+    CHECK(cudaMemcpy(grid->data, d_grid_data, size*sizeof(byte), cudaMemcpyDeviceToHost));
 
     CHECK(cudaFree(d_grid_data));
     CHECK(cudaDeviceReset());
@@ -286,18 +286,18 @@ void julia_grid(grid_t* grid, const grid_gen_params* params){
     const size_t size = grid->size;
     const size_t rows = grid->y;
     const size_t cols = grid->x;
-    const size_t max_iterations = grid->max_iterations;
+    const byte max_iterations = grid->max_iterations;
     thrust::complex<CBASE> lower_left(grid->lower_left.re, grid->lower_left.im);
     thrust::complex<CBASE> upper_right(grid->upper_right.re, grid->upper_right.im);
 
-    size_t* d_grid_data;
-    CHECK(cudaMalloc(&d_grid_data, size*sizeof(size_t)));
+    byte* d_grid_data;
+    CHECK(cudaMalloc(&d_grid_data, size*sizeof(byte)));
     dim3 block_size(BLOCK_SIZE_X, BLOCK_SIZE_Y);
     dim3 grid_size((cols + block_size.x - 1) / block_size.x, (rows + block_size.y - 1) / block_size.y);
     julia_kernel<<<grid_size, block_size>>>(d_grid_data, constant, radius, max_iterations, lower_left, upper_right, rows, cols);
     CHECK(cudaDeviceSynchronize());
 
-    CHECK(cudaMemcpy(grid->data, d_grid_data, size*sizeof(size_t), cudaMemcpyDeviceToHost));
+    CHECK(cudaMemcpy(grid->data, d_grid_data, size*sizeof(byte), cudaMemcpyDeviceToHost));
 
     CHECK(cudaFree(d_grid_data));
     CHECK(cudaDeviceReset());

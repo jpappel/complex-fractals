@@ -1,6 +1,9 @@
 # grid files
 *.grid
 
+# analysis stuff
+analysis/data/*
+
 # Presentation Stuff
 build/*
 *.html

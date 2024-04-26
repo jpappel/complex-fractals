@@ -20,22 +20,25 @@ typedef struct {
     CBASE im;
 } complex_t;
 
+typedef unsigned char byte;
+
 typedef struct {
     size_t x;
     size_t y;
     size_t size;
-    size_t max_iterations;
+    byte max_iterations;
     complex_t lower_left;
     complex_t upper_right;
-    size_t* data;
+    byte* data;
 } grid_t;
 
-grid_t* create_grid(const size_t x, const size_t y, const size_t max_iterations, complex_t lower_left, complex_t upper_right);
-void set_grid(grid_t* grid, const size_t val);
+grid_t* create_grid(const size_t x, const size_t y, const byte max_iterations, complex_t lower_left, complex_t upper_right);
+void set_grid(grid_t* grid, const byte val);
 grid_t* copy_grid(const grid_t* grid);
 void free_grid(grid_t* grid);
 bool grid_equal(const grid_t* grid1, const grid_t* grid2);
-bool grid_allclose(const grid_t* grid1, const grid_t* grid2, const size_t max_error);
+// not useful
+bool grid_allclose(const grid_t* grid1, const grid_t* grid2, const byte max_error);
 
 #ifndef __NVCC__
 CBASE complex grid_to_complex(const grid_t* grid, const size_t index);

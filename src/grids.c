@@ -12,11 +12,11 @@ static inline bool equal_complex_t(const complex_t z1, const complex_t z2){
 /*
  * Creates a grid for storing the results of the escape algorithm
  */
-grid_t* create_grid(const size_t x, const size_t y, const size_t max_iterations, complex_t lower_left, complex_t upper_right){
+grid_t* create_grid(const size_t x, const size_t y, const byte max_iterations, complex_t lower_left, complex_t upper_right){
     if(x <= 0 || y <= 0) return NULL;
 
     const size_t size = x * y;
-    size_t* data = malloc(size * sizeof(size_t));
+    byte* data = malloc(size);
     if(!data){
         fprintf(stderr, "Error allocating %zu grid points for grid\n", size);
         return NULL;
@@ -46,7 +46,7 @@ grid_t* create_grid(const size_t x, const size_t y, const size_t max_iterations,
 /*
  * Sets all entries of a grid to the value val
  */
-void set_grid(grid_t* grid, const size_t val){
+void set_grid(grid_t* grid, const byte val){
     if(!grid || !grid->data) return;
     memset(grid->data, val, grid->size);
 }
@@ -93,7 +93,7 @@ bool grid_equal(const grid_t* grid1_p, const grid_t* grid2_p){
 /*
  * Checks if two grids have a given maximum difference
  */
-bool grid_allclose(const grid_t* restrict grid1, const grid_t* restrict grid2, const size_t max_error){
+bool grid_allclose(const grid_t* restrict grid1, const grid_t* restrict grid2, const byte max_error){
     if(grid1->x != grid2->x || grid1->y != grid2->y ||
             !equal_complex_t(grid1->lower_left, grid2->lower_left) ||
             !equal_complex_t(grid1->upper_right, grid2->upper_right)){
@@ -196,14 +196,14 @@ int write_grid(FILE* restrict file, const grid_t *grid){
 
     if(fwrite(&grid->x, sizeof(size_t), 1, file) != 1 ||
        fwrite(&grid->y, sizeof(size_t), 1, file) != 1 ||
-       fwrite(&grid->max_iterations, sizeof(size_t), 1, file) != 1 ||
+       fwrite(&grid->max_iterations, sizeof(byte), 1, file) != 1 ||
        fwrite(&precision, sizeof(size_t), 1, file) != 1 ||
        fwrite(&grid->lower_left, precision, 1, file) != 1 ||
        fwrite(&grid->upper_right, precision, 1, file) != 1){
         return GRID_WRITE_ERROR;
     }
 
-    if(fwrite(grid->data, sizeof(size_t), grid->size, file) != grid->size){
+    if(fwrite(grid->data, 1, grid->size, file) != grid->size){
         return GRID_WRITE_ERROR;
     }
 
@@ -223,7 +223,7 @@ void print_grid_info(const grid_t* grid){
     printf("x\t%zu\n", grid->x);
     printf("y\t%zu\n", grid->y);
     printf("size\t%zu\n", grid->size);
-    printf("Max Iterations\t%zu\n", grid->max_iterations);
+    printf("Max Iterations\t%hhu\n", grid->max_iterations);
     printf("lower_left\t"CFORMAT"+ "CFORMAT"I\n", grid->lower_left.re, grid->lower_left.im);
     printf("upper_right\t"CFORMAT"+ "CFORMAT"I\n", grid->upper_right.re, grid->upper_right.im);
 
@@ -236,8 +236,8 @@ void print_grid_info(const grid_t* grid){
 void print_grid(FILE* file, const grid_t* grid){
     const size_t size = grid->size;
     const size_t x_res = grid->x;
-    const size_t iterations = grid->max_iterations;
-    const size_t* data = grid->data;
+    const byte iterations = grid->max_iterations;
+    const byte* data = grid->data;
 
     //TODO: set values in output buffer rather than multiple printf calls
     //      the buffer needs to be larger to hold newlines
@@ -306,11 +306,11 @@ grid_t* read_grid(FILE* restrict file){
 
     size_t x = 0;
     size_t y = 0;
-    size_t max_iterations = 0;
+    byte max_iterations = 0;
     size_t precision = 0;
     if(fread(&x, sizeof(size_t), 1, file) != 1){ longjmp(file_read_error, 1); }
     if(fread(&y, sizeof(size_t), 1, file) != 1){ longjmp(file_read_error, 1); }
-    if(fread(&max_iterations, sizeof(size_t), 1, file) != 1){ longjmp(file_read_error, 1); }
+    if(fread(&max_iterations, sizeof(byte), 1, file) != 1){ longjmp(file_read_error, 1); }
     if(fread(&precision, sizeof(size_t), 1, file) != 1){ longjmp(file_read_error, 1) ; }
 
     if(precision != sizeof(complex_t)){
@@ -330,7 +330,7 @@ grid_t* read_grid(FILE* restrict file){
         return NULL;
     }
 
-    read_count = fread(grid->data, sizeof(size_t), grid->size, file);
+    read_count = fread(grid->data, 1, grid->size, file);
     if(read_count != grid->size){
         fprintf(stderr, "Error reading file, expected %zu grid points but only found %zu\n", grid->size, read_count);
         free_grid(grid);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdint.h>
 #ifndef __NVCC__
 #include <complex.h>
 #endif
@@ -18,12 +19,12 @@ typedef union {
 typedef void (*fractal_generator)(grid_t* , const grid_gen_params* );
 
 #ifndef __NVCC__
-size_t mandelbrot(const CBASE complex z0, const size_t max_iterations);
-size_t tricorn(const CBASE complex z0, const size_t max_iterations);
-size_t burning_ship(const CBASE complex z0, const size_t max_iterations);
-size_t multibrot(const CBASE complex z0, const size_t max_iterations, const double d);
-size_t multicorn(const CBASE complex z0, const size_t max_iterations, const double d);
-size_t julia(const CBASE complex z0, const CBASE complex c, const size_t max_iterations, const double R);
+byte mandelbrot(const CBASE complex z0, const byte max_iterations);
+byte tricorn(const CBASE complex z0, const byte max_iterations);
+byte burning_ship(const CBASE complex z0, const byte max_iterations);
+byte multibrot(const CBASE complex z0, const byte max_iterations, const double d);
+byte multicorn(const CBASE complex z0, const byte max_iterations, const double d);
+byte julia(const CBASE complex z0, const CBASE complex c, const byte max_iterations, const double R);
 #endif
 
 #ifdef __cplusplus

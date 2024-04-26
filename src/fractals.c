@@ -22,32 +22,32 @@ void print_usage(FILE* file, const char* program_name){
 
 void print_help(){
     printf("Options:\n"
-           "  -i, --iterations <value>        the number of iterations (default: 100)\n"
-           "  -x, --x-res <value>             the horizontal resolution (default: terminal width)\n"
-           "  -y, --y-res <value>             the vertical resolution (default: terminal height)\n"
-           "  -l, --lower-left <value>        Set the lower left corner of the fractal area (default: -2.0+-2.0i)\n"
-           "  -u, --upper-right <value>       Set the upper right corner of the fractal area (default: 2.0+2.0i)\n"
-           "  -z, --magnification <value>     Set the magnification factor (default: 1)\n"
-           "  -d, --degree <value>            Set the degree for fractals that use it (default: 1)\n"
-           "  -c, --constant <value>          Set the constant for fractals that use it (default: 0+0i)\n"
-           "  -r, --radius <value>            Set the radius for fractals that use it (default: 2)\n"
-           "  -o, --output <filename>         the output filename (default: fractal.grid)\n"
-           "  -f, --fractal <type>            the fractal type (default: mandelbrot)\n"
-           "      supported fractals: mandelbrot, tricorn, multibrot, multicorn, burning_ship, julia\n"
-           "  -p, --performance               print performance info\n"
-           "  -v, --verbose                   verbose output\n"
-           "  -h, --help                      prints this help message\n"
-           "\ndegree is mutually exclusive with constant and radius\n"
-           "\nExits with a status code of 1 if the program encounters an error, exits with 2 if an argument is incorrect\n");
+            "  -i, --iterations <value>        the number of iterations (default: 25, max 255)\n"
+            "  -x, --x-res <value>             the horizontal resolution (default: terminal width)\n"
+            "  -y, --y-res <value>             the vertical resolution (default: terminal height)\n"
+            "  -l, --lower-left <value>        Set the lower left corner of the fractal area (default: -2.0+-2.0i)\n"
+            "  -u, --upper-right <value>       Set the upper right corner of the fractal area (default: 2.0+2.0i)\n"
+            "  -z, --magnification <value>     Set the magnification factor (default: 1)\n"
+            "  -d, --degree <value>            Set the degree for fractals that use it (default: 1)\n"
+            "  -c, --constant <value>          Set the constant for fractals that use it (default: 0+0i)\n"
+            "  -r, --radius <value>            Set the radius for fractals that use it (default: 2)\n"
+            "  -o, --output <filename>         the output filename (default: fractal.grid)\n"
+            "  -f, --fractal <type>            the fractal type (default: mandelbrot)\n"
+            "      supported fractals: mandelbrot, tricorn, multibrot, multicorn, burning_ship, julia\n"
+            "  -p, --performance               print performance info\n"
+            "  -v, --verbose                   verbose output\n"
+            "  -h, --help                      prints this help message\n"
+            "\ndegree is mutually exclusive with constant and radius\n"
+            "\nExits with a status code of 1 if the program encounters an error, exits with 2 if an argument is incorrect\n");
 }
 
 void print_info(const char* program_name){
-    #ifdef EXTENDED_PRECISION
+#ifdef EXTENDED_PRECISION
     printf("Compiled with long double float precision\n");
-    #endif
-    #ifndef EXTENDED_PRECISION
+#endif
+#ifndef EXTENDED_PRECISION
     printf("%s complied with double float precision\n", program_name);
-    #endif
+#endif
 }
 
 double time_fractal(fractal_generator generator, grid_t* grid, grid_gen_params* params){
@@ -72,7 +72,7 @@ int main(const int argc, char *argv[]) {
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 
     //default values
-    size_t iterations = 100;
+    byte iterations = 25;
     size_t x_res = w.ws_col;
     size_t y_res = w.ws_row;
     complex_t lower_left = { .re = -2, .im = -2};
@@ -116,12 +116,20 @@ int main(const int argc, char *argv[]) {
         {0, 0, 0, 0} // Termination element
     };
 
+    unsigned long temp;
     //parse command line arguments
     int opt;
     while((opt = getopt_long(argc, argv, "i:x:y:l:u:z:d:c:r:o:vphf:", long_options, NULL)) != -1){
         switch(opt){
             case 'i':
-                iterations = strtoull(optarg, NULL, 10);
+                temp = strtoul(optarg, NULL, 10);
+                if(temp > 255){
+                    fprintf(stderr, "Iterations above maximum, setting to 255\n");
+                    iterations = 255;
+                }
+                else {
+                    iterations = temp;
+                }
                 break;
             case 'x':
                 x_res = strtoull(optarg, NULL, 10);
@@ -256,7 +264,7 @@ int main(const int argc, char *argv[]) {
 
     if(performance){
         double time = time_fractal(generator, grid, params);
-        printf("%s,%s,%zu,%zu,%zu,"
+        printf("%s,%s,%hhu,%zu,%zu,"
                 CFORMAT","CFORMAT","CFORMAT","CFORMAT",%f\n",
                 argv[0], fractal_name, iterations, x_res, y_res,
                 lower_left.re, lower_left.im, upper_right.re, upper_right.im, time);
@@ -268,22 +276,24 @@ int main(const int argc, char *argv[]) {
         print_grid_info(grid);
     }
 
-    //use "safer" versions of c string functions
-    //likely aren't necessary unless a user can pass non-null terminated strings as arguments, but that would likely break something up in getopt
-    if(output_filename[0] == '-' && strnlen(output_filename, 16) == 1){
-        if(write_grid(stdout, grid) == GRID_WRITE_ERROR){
-            fprintf(stderr, "Error occured while writting to file %s\n", output_filename);
+    if(!performance){
+        //uses "safer" versions of c string functions
+        //likely aren't necessary unless a user can pass non-null terminated strings as arguments, but that would likely break something up in getopt
+        if(output_filename[0] == '-' && strnlen(output_filename, 16) == 1){
+            if(write_grid(stdout, grid) == GRID_WRITE_ERROR){
+                fprintf(stderr, "Error occured while writting to file %s\n", output_filename);
+            }
         }
-    }
-    else {
-        FILE* file = fopen(output_filename, "wb");
-        if(!file){
-            perror("Error occured while trying to write");
+        else {
+            FILE* file = fopen(output_filename, "wb");
+            if(!file){
+                perror("Error occured while trying to write");
+            }
+            else if(write_grid(file, grid) == GRID_WRITE_ERROR){
+                fprintf(stderr, "Error occured while writting to file %s\n", output_filename);
+            }
+            fclose(file);
         }
-        else if(write_grid(file, grid) == GRID_WRITE_ERROR){
-            fprintf(stderr, "Error occured while writting to file %s\n", output_filename);
-        }
-        fclose(file);
     }
 
     free(params);
