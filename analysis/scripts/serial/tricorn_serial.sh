@@ -1,8 +1,8 @@
 #!/bin/bash
-# SBATCH -p shared
-# -t 2:30:00
-# -o analysis/data/%x.%j.csv
-# -e analysis/error/%x.%j.err
+#SBATCH -p shared
+#SBATCH -t 2:30:00
+#SBATCH -o analysis/data/%x.%j.csv
+#SBATCH -e analysis/error/%x.%j.err
 
 THREADS=1
 BLOCK_SIZE=1
