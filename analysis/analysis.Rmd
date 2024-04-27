@@ -5,15 +5,320 @@ author:
 output:
     html_document:
         toc: true
-        toc_float: true
+        toc_float: false
         number_sections: false
-        theme: united
-        highlight: tango
-        code_folding: show
+        theme: readable
+        highlight: espresso
+        code_folding: hide
         fig_width: 10
         fig_height: 8
         fig_caption: true
+        df_print: paged
 ---
 
-```{r setup, echo=FALSE}
+```{r setup, include=FALSE}
+library(tidyverse)
+library(plotly)
+library(modelsummary)
 ```
+
+# Hypotheses
+
+1. Computing complex fractals parallelizes very well.
+2. The runtime has a linear relation with the number of samples.
+
+# Data
+
+Each data point is an average of 5 runtimes collected from running the program.
+To recreate out data, compile the programs using the instructions in `README.md` then run `gather_data` in the `analysis` directory from the project root.
+After the the SLURM jobs are finished, run `analysis/collate_data` to collect the data into a single file `analysis/data.csv`.
+Note that the SLURM scripts are unique to MU Cluster and will need to be tweaked to work on other systems.
+
+```{r data_ingest, include=FALSE}
+full_data <- read_csv("data.csv") %>%
+  mutate(samples = horizontal_samples * vertical_samples,
+         program = gsub("^build/(.*?)-fractals$", "\\1", program),
+         threads = ifelse(program == "cuda", 1024, threads)) %>%
+  select(program, threads, fractal, samples, runtime)
+```
+
+For a raw csv view of the data see `data.csv`.
+We collected data for the following fractals:
+
+* Mandelbrot
+* Burning Ship
+* Tricorn
+* Multibrot
+* Multicorn
+* Julia
+
+Using a maximum iterations of 25.
+We collect 3 data points per serial experiment, and 5 data points per shared and CUDA experiment.
+For a more detailed view of our collection methods see the scripts in `analysis/scripts`.
+The runtimes for CUDA experiments include the time to copy the data to and from the GPU for reasons that will become apparent later.
+Note the block size is set to $16x16$ for all CUDA experiments since we found a maxium percentage difference of $0.2%$ between $16x16$ and other block sizes that yield the maximum number of warps.
+
+```{r data_table, echo=FALSE}
+full_data
+```
+
+# Runtimes
+
+## Sampling's Effect on Runtimes 
+
+The following plots are interactive, allowing you to zoom in on the data.
+By clicking on the legend you can hide or show data for each fractal.
+Each plot has a line representing the median runtime for each fractal and program.
+
+### Serial, Shared, CUDA
+
+For larger sample sizes we see the GPU with memory copy overhead is far faster than the CPU implementations.
+Without the memory copy overhead the CUDA runtimes are barely measurable.
+We expect this result, since each value in the fractal is computed independently, which is the type of task the GPU is designed for.
+
+Observe that the fractals that require complex exponentiation, such as the Multibrot and Multicorn, have the longest runtimes.
+We expect this, since the complex exponentiation is the most computationally expensive part of the fractal generation.
+
+Also take note of how linear the runtimes are with respect to the number of samples.
+We explore this further in the linear models section.
+
+```{r sampling_effect}
+full_plot <- full_data %>%
+  ggplot(aes(x = samples, y = runtime, color = program,
+             shape = factor(threads))) +
+  geom_point() +
+  facet_wrap(~fractal, scales = "free_y") +
+  stat_summary(fun = median, geom = "line",
+               aes(group = interaction(program, threads))) +
+  labs(title = "Sampling's Effect on Runtimes",
+       x = "Samples",
+       y = "Runtime (s)",
+       shape = "Threads",
+       color = "Implementation")
+
+ggplotly(full_plot)
+```
+
+### Serial 
+
+```{r serial_sampling}
+serial_plot <- full_data %>%
+  filter(program == "serial") %>%
+  ggplot(aes(x = samples, y = runtime, color = fractal)) +
+  geom_point() +
+  stat_summary(fun = median, geom = "line",
+               aes(group = fractal)) +
+  labs(title = "Serial Sampling's Effect on Runtimes",
+       x = "Samples",
+       y = "Runtime (s)",
+       color = "Fractal")
+
+ggplotly(serial_plot)
+```
+
+### Shared
+
+```{r shared_sampling}
+shared_plot <- full_data %>%
+  filter(program == "shared") %>%
+  rename(Threads = threads) %>%
+  ggplot(aes(x = samples, y = runtime, color = fractal)) +
+  geom_point() +
+  stat_summary(fun = median, geom = "line",
+               aes(group = fractal)) +
+  facet_wrap(~Threads, scales = "free_y", labeller = label_both) +
+  labs(title = "Shared Sampling's Effect on Runtimes",
+       x = "Samples",
+       y = "Runtime (s)",
+       color = "Fractal")
+
+ggplotly(shared_plot)
+```
+
+### CUDA
+
+```{r cuda_sampling}
+cuda_plot <- full_data %>%
+  filter(program == "cuda") %>%
+  ggplot(aes(x = samples, y = runtime, color = fractal)) +
+  geom_point() +
+  stat_summary(fun = median, geom = "line",
+               aes(group = fractal)) +
+  labs(title = "CUDA Sampling's Effect on Runtimes",
+       x = "Samples",
+       y = "Runtime (s)",
+       color = "Fractal")
+
+ggplotly(cuda_plot)
+```
+
+## Linear Models
+
+We fit linear models to the data to test our hypothesis that the runtime has a linear relationship with the number of samples.
+By doing so we can give with a high confidence models for computing the runtime of a fractal given the number of samples.
+In all the models below, the $R^2$ value is very close to 1, indicating that the model fits the data very well.
+
+### Serial
+
+```{r serial_models, include=FALSE}
+serial_mandelbrot_model <- full_data %>%
+  filter(program == "serial", fractal == "mandelbrot") %>%
+  lm(runtime ~ samples, data = .)
+
+serial_burning_ship_model <- full_data %>%
+  filter(program == "serial", fractal == "burning ship") %>%
+  lm(runtime ~ samples, data = .)
+
+serial_tricorn_model <- full_data %>%
+  filter(program == "serial", fractal == "tricorn") %>%
+  lm(runtime ~ samples, data = .)
+
+serial_multibrot_model <- full_data %>%
+  filter(program == "serial", fractal == "multibrot") %>%
+  lm(runtime ~ samples, data = .)
+serial_multicorn_model <- full_data %>%
+  filter(program == "serial", fractal == "multicorn") %>%
+  lm(runtime ~ samples, data = .)
+
+serial_julia_model <- full_data %>%
+  filter(program == "serial", fractal == "julia") %>%
+  lm(runtime ~ samples, data = .)
+```
+
+<div style="display: flex; justify-content: center; align-items: center;">
+```{r serial_models_table, echo=FALSE}
+modelsummary(list(
+                  "Mandelbrot" = serial_mandelbrot_model,
+                  "Burning Ship" = serial_burning_ship_model,
+                  "Tricorn" = serial_tricorn_model,
+                  "Multibrot" = serial_multibrot_model,
+                  "Multicorn" = serial_multicorn_model,
+                  "Julia" = serial_julia_model), output = "html")
+```
+</div>
+
+### Shared
+
+For the sake of brevity we only show models that include all threads.
+Separating the models by thread counts provided much better models.
+
+```{r shared_models, include=FALSE}
+shared_mandelbrot_model <- full_data %>%
+  filter(program == "shared", fractal == "mandelbrot") %>%
+  lm(runtime ~ samples, data = .)
+shared_burning_ship_model <- full_data %>%
+  filter(program == "shared", fractal == "burning ship") %>%
+  lm(runtime ~ samples, data = .)
+shared_tricorn_model <- full_data %>%
+  filter(program == "shared", fractal == "tricorn") %>%
+  lm(runtime ~ samples, data = .)
+shared_multibrot_model <- full_data %>%
+  filter(program == "shared", fractal == "multibrot") %>%
+  lm(runtime ~ samples, data = .)
+shared_multicorn_model <- full_data %>%
+  filter(program == "shared", fractal == "multicorn") %>%
+  lm(runtime ~ samples, data = .)
+shared_julia_model <- full_data %>%
+  filter(program == "shared", fractal == "julia") %>%
+  lm(runtime ~ samples, data = .)
+```
+
+<div style="display: flex; justify-content: center; align-items: center;">
+```{r shared_models_table, echo=FALSE}
+modelsummary(list(
+                  "Mandelbrot" = shared_mandelbrot_model,
+                  "Burning Ship" = shared_burning_ship_model,
+                  "Tricorn" = shared_tricorn_model,
+                  "Multibrot" = shared_multibrot_model,
+                  "Multicorn" = shared_multicorn_model,
+                  "Julia" = shared_julia_model), output = "html")
+```
+</div>
+
+### CUDA
+
+```{r cuda_models, include=FALSE}
+cuda_mandelbrot_model <- full_data %>%
+  filter(program == "cuda", fractal == "mandelbrot") %>%
+  lm(runtime ~ samples, data = .)
+cuda_burning_ship_model <- full_data %>%
+  filter(program == "cuda", fractal == "burning ship") %>%
+  lm(runtime ~ samples, data = .)
+cuda_tricorn_model <- full_data %>%
+  filter(program == "cuda", fractal == "tricorn") %>%
+  lm(runtime ~ samples, data = .)
+cuda_multibrot_model <- full_data %>%
+  filter(program == "cuda", fractal == "multibrot") %>%
+  lm(runtime ~ samples, data = .)
+cuda_multicorn_model <- full_data %>%
+  filter(program == "cuda", fractal == "multicorn") %>%
+  lm(runtime ~ samples, data = .)
+cuda_julia_model <- full_data %>%
+  filter(program == "cuda", fractal == "julia") %>%
+  lm(runtime ~ samples, data = .)
+```
+
+<div style="display: flex; justify-content: center; align-items: center;">
+```{r cuda_models_table, echo=FALSE}
+modelsummary(list(
+                  "Mandelbrot" = cuda_mandelbrot_model,
+                  "Burning Ship" = cuda_burning_ship_model,
+                  "Tricorn" = cuda_tricorn_model,
+                  "Multibrot" = cuda_multibrot_model,
+                  "Multicorn" = cuda_multicorn_model,
+                  "Julia" = cuda_julia_model), output = "html")
+```
+</div>
+
+
+# Parallelism
+
+```{r serial_times, include=FALSE}
+serial_times <- full_data %>%
+  filter(program == "serial") %>%
+  group_by(samples) %>%
+  summarize(serial_runtime = median(runtime))
+```
+
+In the plots below we show the percentage of parallelism according to Amdahls Law as a function of samples.
+We truncated the data to only show percentage parallelism greater than -75%.
+As we expected, the CUDA implementation is highly parallel, with the shared implementations have varying degrees of parallelism.
+For each thread count, the shared implementations tend to level off at a certain percentage of parallelism.
+An oddity in the data is that the shared multibrot and multicorn implementations have a negative percentage of parallelism.
+We believe this is from their usage of complex exponentiation, which is their ownly major difference between the other fractals.
+From this, we conclude that that there is some resource that each thread must share in multibrot and multicorn that is not shared in the other fractals.
+Most likely this resource is a specialized arrithmetic unit.
+
+On the GPU we have a similar issue, the register count per thread from about 32 to 48 when computing the multibrot and multicorn fractals.
+
+```{r program_parallelism, echo=FALSE}
+parallel <- full_data %>%
+  filter(program != "serial") %>%
+  left_join(serial_times, by = "samples") %>%
+  mutate(speedup = serial_runtime / runtime,
+         percentage_parallel = (threads/(threads-1))*(1-1/speedup)) %>%
+  filter(percentage_parallel > -0.75, is.finite(percentage_parallel))
+```
+
+```{r parallel_plot}
+parallel_plot <- parallel %>%
+  ggplot(aes(x = samples, y = percentage_parallel, color = program,
+             shape = factor(threads))) +
+  geom_point() +
+  stat_summary(fun = median, geom = "line",
+               aes(group = interaction(program, fractal, threads))) +
+  facet_wrap(~fractal, scales = "free_y") +
+  labs(title = "Program/Fractal Parallelism",
+       x = "Samples",
+       y = "Percentage Parallel",
+       color = "Implementation",
+       shape = "Threads")
+
+ggplotly(parallel_plot)
+```
+
+
+# Conclusions
+
+From this data we can conclude that the runtime of fractal generation is linear with respect to the number of samples.
+We also conclude that the CUDA implementation is highly parallel, with the shared implementations having varying degrees of parallelism.

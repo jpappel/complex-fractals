@@ -68,6 +68,7 @@ presentation/presentation.html: presentation/presentation.md
 analysis: analysis/analysis.html
 
 analysis/analysis.html: analysis/analysis.Rmd # TODO: add compile command
+	Rscript -e "setwd('analysis'); rmarkdown::render('analysis.Rmd')"
 
 clean:
 	rm -rf $(BUILD_DIR)/* presentation/presentation.html analysis/analysis.html
