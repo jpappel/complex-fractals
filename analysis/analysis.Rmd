@@ -291,6 +291,8 @@ Most likely this resource is a specialized arrithmetic unit.
 
 On the GPU we have a similar issue, the register count per thread from about 32 to 48 when computing the multibrot and multicorn fractals.
 
+(Thanks to Yousuf for improving the legibility of these graphs)
+
 ```{r program_parallelism, echo=FALSE}
 parallel <- full_data %>%
   filter(program != "serial") %>%
@@ -302,8 +304,8 @@ parallel <- full_data %>%
 
 ```{r parallel_plot}
 parallel_plot <- parallel %>%
-  ggplot(aes(x = samples, y = percentage_parallel, color = program,
-             shape = factor(threads))) +
+  ggplot(aes(x = samples, y = percentage_parallel,
+             color = interaction(program,threads))) +
   geom_point() +
   stat_summary(fun = median, geom = "line",
                aes(group = interaction(program, fractal, threads))) +
@@ -311,8 +313,7 @@ parallel_plot <- parallel %>%
   labs(title = "Program/Fractal Parallelism",
        x = "Samples",
        y = "Percentage Parallel",
-       color = "Implementation",
-       shape = "Threads")
+       color = "Implementation/Threads")
 
 ggplotly(parallel_plot)
 ```
