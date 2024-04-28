@@ -1,3 +1,6 @@
+/*
+ * Functions for the creation, manipulation, and evaluation of grids.
+ */
 #include <complex.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -92,6 +95,8 @@ bool grid_equal(const grid_t* grid1_p, const grid_t* grid2_p){
 
 /*
  * Checks if two grids have a given maximum difference
+ * This function has no few if any uses, experimentall the grids are either exact or very different,
+ * indicating an error in their generation
  */
 bool grid_allclose(const grid_t* restrict grid1, const grid_t* restrict grid2, const byte max_error){
     if(grid1->x != grid2->x || grid1->y != grid2->y ||
@@ -101,8 +106,6 @@ bool grid_allclose(const grid_t* restrict grid1, const grid_t* restrict grid2, c
     }
     const size_t size = grid1->size;
     for(size_t i = 0; i < size; i++){
-        //FIXME: figure out how to handle difference between two unsigned values
-        //       possibly cast them to sized longs?
         if(abs(grid1->data[i] - grid2->data[i]) >= max_error) return false;
     }
     return true;
@@ -172,12 +175,11 @@ void zoom_grid(grid_t* restrict grid, const CBASE magnification){
  *
  * Returns 0 on success
  *
- * FIXME: add dynamic bounding box resolution by storing sizeof points in the file
  * The .grid format is a binary file format
- * The first 3 bytes of the file are a magic number defined in grids.h
+ * The first 3 bytes of the file are a magic number defined in grids.h (a goose !)
  * The next 16 bytes are the grid dimensions (x then y)
- * The next 8 bytes is the max_iterations
- * The next 8 bytes are the size of a grid point in bytes
+ * The next 1 byte is the max_iterations
+ * The next 8 bytes are the precision for the complex numbers
  * The next 2*precision bytes are the lower left and upper right corners
  * The rest of the file is the data for the grid, which should be exactly x*y*8 bytes
  */
@@ -239,14 +241,13 @@ void print_grid(FILE* file, const grid_t* grid){
     const byte iterations = grid->max_iterations;
     const byte* data = grid->data;
 
-    //TODO: set values in output buffer rather than multiple printf calls
-    //      the buffer needs to be larger to hold newlines
     char* output_buffer = malloc(size + grid->y-1);
     if(!output_buffer){
         fprintf(stderr, "Failed to allocate output buffer for %zu points\n", size);
         return;
     }
 
+    // sets an output buffer to minimize number of syscalls
     setvbuf(file, output_buffer, _IOFBF, size + grid->y - 1);
 
     const char point_types[] = { ' ', '.', '*', '%', '#'};
@@ -323,8 +324,10 @@ grid_t* read_grid(FILE* restrict file){
     if(fread(&lower_left, sizeof(complex_t), 1, file) != 1){ longjmp(file_read_error, 1); }
     if(fread(&upper_right, sizeof(complex_t), 1, file) != 1){ longjmp(file_read_error, 1); }
 
-    //TODO: look into mmaping the file to data, offseting by the bounding and resolution information
-    //      this would likely require an alloc_grid function, similar to jeff's implementation in hw03
+    // NOTE: for very large sizes it might make sense to memmap the file
+    //       this would work on the CPU but break the cuda implmentation
+    //       a potential fix would to just make multiple grids, aand stich them in
+    //       after image rendering
     grid_t* grid = create_grid(x, y, max_iterations, lower_left, upper_right);
     if(!grid){
         return NULL;

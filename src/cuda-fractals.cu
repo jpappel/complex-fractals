@@ -1,10 +1,10 @@
+/*
+ * Compute fractals using CUDA
+ */
 #include <cuda_runtime.h>
 #include <thrust/complex.h>
 #include "fractals.h"
-
-//These won't work/ need to be modifiied for the cuda version
-//#include "grids.h"
-//#include "fractals.h"
+#include "grids.h"
 
 /*
  * Macro for checking CUDA errors
@@ -22,8 +22,13 @@
 #define CBASE double
 #endif
 
+#ifndef BLOCK_SIZE_X
 #define BLOCK_SIZE_X 16
+#endif
+
+#ifndef BLOCK_SIZE_Y
 #define BLOCK_SIZE_Y 16
+#endif
 
 // this ain't pretty, but this logic should never change for kernels
 #define SET_ROW_COL \
@@ -32,6 +37,9 @@
     if(row >= rows || col >= cols) return
 
 
+/*
+ * Device helper function to cconvert a grid point into its corresponding complex number
+ */
 __device__
 thrust::complex<CBASE> grid_to_complex(const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t row, const size_t col, const size_t rows, const size_t cols){
     const CBASE x_min = lower_left.real();
@@ -48,6 +56,9 @@ thrust::complex<CBASE> grid_to_complex(const thrust::complex<CBASE> lower_left, 
     return z;
 }
 
+/*
+ * Device function to compute if a point is or is not in the mandelbrot set
+ */
 __device__
 byte mandelbrot(const thrust::complex<CBASE> z0, const byte max_iterations){
     thrust::complex<CBASE> z = z0;
@@ -59,6 +70,9 @@ byte mandelbrot(const thrust::complex<CBASE> z0, const byte max_iterations){
     return iteration;
 }
 
+/*
+ * Kernel to run mandelbrot on an entire grid
+ */
 __global__
 void mandelbrot_kernel(byte* grid_data, const byte max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
     SET_ROW_COL;
@@ -68,6 +82,9 @@ void mandelbrot_kernel(byte* grid_data, const byte max_iterations, const thrust:
     grid_data[row*cols + col] = mandelbrot(z, max_iterations);
 }
 
+/*
+ * Device function to compute if a point is or is not in the tricorn set
+ */
 __device__ 
 byte tricorn(const thrust::complex<CBASE> z0, const byte max_iterations){
     thrust::complex<CBASE> z = z0;
@@ -79,6 +96,9 @@ byte tricorn(const thrust::complex<CBASE> z0, const byte max_iterations){
     return iteration;
 }
 
+/*
+ * Kernel to run tricorn on an entire grid
+ */
 __global__
 void tricorn_kernel(byte* grid_data, const byte max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
     SET_ROW_COL;
@@ -88,6 +108,9 @@ void tricorn_kernel(byte* grid_data, const byte max_iterations, const thrust::co
     grid_data[row*cols + col] = tricorn(z, max_iterations);
 }
 
+/*
+ * Device function to compute if a point is or is not in the burning ship set
+ */
 __device__
 byte burning_ship(const thrust::complex<CBASE> z0, const byte max_iterations){
     thrust::complex<CBASE> z = z0;
@@ -101,6 +124,9 @@ byte burning_ship(const thrust::complex<CBASE> z0, const byte max_iterations){
     return iteration;
 }
 
+/*
+ * Kernel to run burning_ship on an entire grid
+ */
 __global__
 void burning_ship_kernel(byte* grid_data, const byte max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
     SET_ROW_COL;
@@ -110,6 +136,9 @@ void burning_ship_kernel(byte* grid_data, const byte max_iterations, const thrus
     grid_data[row*cols + col] = burning_ship(z, max_iterations);
 }
 
+/*
+ * Device function to compute if a point is or is not in the multibrot set
+ */
 __device__
 byte multibrot(const thrust::complex<CBASE> z0, const byte max_iterations, const double d){
     thrust::complex<CBASE> z = z0;
@@ -121,6 +150,9 @@ byte multibrot(const thrust::complex<CBASE> z0, const byte max_iterations, const
     return iteration;
 }
 
+/*
+ * Kernel to run multibrot on an entire grid
+ */
 __global__
 void multibrot_kernel(byte* grid_data, const double degree, const byte max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
     SET_ROW_COL;
@@ -130,6 +162,9 @@ void multibrot_kernel(byte* grid_data, const double degree, const byte max_itera
     grid_data[row*cols + col] = multibrot(z, max_iterations, degree);
 }
 
+/*
+ * Device function to compute if a point is or is not in the multicorn set
+ */
 __device__
 byte multicorn(const thrust::complex<CBASE> z0, const byte max_iterations, const double d){
     thrust::complex<CBASE> z = z0;
@@ -141,6 +176,9 @@ byte multicorn(const thrust::complex<CBASE> z0, const byte max_iterations, const
     return iteration;
 }
 
+/*
+ * Kernel to run multicorn on an entire grid
+ */
 __global__
 void multicorn_kernel(byte* grid_data, const double degree, const byte max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
     SET_ROW_COL;
@@ -150,6 +188,9 @@ void multicorn_kernel(byte* grid_data, const double degree, const byte max_itera
     grid_data[row*cols + col] = multicorn(z, max_iterations, degree);
 }
 
+/*
+ * Device function to compute if a point is or is not in the julia set
+ */
 __device__
 byte julia(const thrust::complex<CBASE> z0, const byte max_iterations, const thrust::complex<CBASE> c, const double R){
     thrust::complex<CBASE> z = z0;
@@ -161,6 +202,9 @@ byte julia(const thrust::complex<CBASE> z0, const byte max_iterations, const thr
     return iteration;
 }
 
+/*
+ * Kernel to run julia on an entire grid
+ */
 __global__
 void julia_kernel(byte* grid_data, const thrust::complex<CBASE> constant, const double radius, const byte max_iterations, const thrust::complex<CBASE> lower_left, const thrust::complex<CBASE> upper_right, const size_t rows, const size_t cols){
     SET_ROW_COL;
@@ -170,6 +214,7 @@ void julia_kernel(byte* grid_data, const thrust::complex<CBASE> constant, const 
     grid_data[row*cols + col] = julia(z, max_iterations, constant, radius);
 }
 
+// prevent c++ name mangling so the grid functions can be linked against in standard c code
 extern "C" {
 void mandelbrot_grid(grid_t* grid, const grid_gen_params* params){
     const size_t size = grid->size;
@@ -181,9 +226,7 @@ void mandelbrot_grid(grid_t* grid, const grid_gen_params* params){
 
     byte* d_grid_data;
     CHECK(cudaMalloc(&d_grid_data, size*sizeof(byte)));
-    //TODO: find good sizes
     dim3 block_size(BLOCK_SIZE_X, BLOCK_SIZE_Y);
-    //dim3 grid_size(0,0);
     dim3 grid_size((cols + block_size.x - 1) / block_size.x, (rows + block_size.y - 1) / block_size.y);
     mandelbrot_kernel<<<grid_size, block_size>>>(d_grid_data, max_iterations, lower_left, upper_right, rows, cols);
     CHECK(cudaDeviceSynchronize());

@@ -67,7 +67,7 @@ presentation/presentation.html: presentation/presentation.md
 
 analysis: analysis/analysis.html
 
-analysis/analysis.html: analysis/analysis.Rmd # TODO: add compile command
+analysis/analysis.html: analysis/analysis.Rmd analysis/data.csv
 	Rscript -e "setwd('analysis'); rmarkdown::render('analysis.Rmd')"
 
 clean:

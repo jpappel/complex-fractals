@@ -16,10 +16,16 @@
 #define NUM_RUNS 5
 #endif
 
+/*
+ * Prints out usage information for the program
+ */
 void print_usage(FILE* file, const char* program_name){
     fprintf(file, "Usage: %s [-v] [-i iterations] [-x x_res] [-y y_res] [-z magnification] [-d degree] [-c constant] [-r radius] [-l lower_left] [-u upper_right] [-o output_grid] -f fractal\n", program_name);
 }
 
+/*
+ * Print out the full help message for the program
+ */
 void print_help(){
     printf("Options:\n"
             "  -i, --iterations <value>        the number of iterations (default: 25, max 255)\n"
@@ -41,6 +47,9 @@ void print_help(){
             "\nExits with a status code of 1 if the program encounters an error, exits with 2 if an argument is incorrect\n");
 }
 
+/*
+ * Prints out additional information about the program, such as the precision it was compiled with
+ */
 void print_info(const char* program_name){
 #ifdef EXTENDED_PRECISION
     printf("Compiled with long double float precision\n");
@@ -50,6 +59,9 @@ void print_info(const char* program_name){
 #endif
 }
 
+/*
+ * Runs a fractal generator NUM_RUNS times and returns the average of those runs
+ */
 double time_fractal(fractal_generator generator, grid_t* grid, grid_gen_params* params){
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
@@ -67,6 +79,47 @@ static inline void parse_complex(const char* string, complex_t* z){
     };
 }
 
+/*
+ * Parses a fractal generator form a string, exitting if it is supplied a parameter which it doesn't support
+ */
+fractal_generator parse_fractal_generator(const char* argument, const bool param_is_degree, const bool param_is_cr){
+    if(strncmp(argument, "mandelbrot", strlen("mandelbrot")) == 0) {
+        return mandelbrot_grid;
+    }
+    else if(strncmp(argument, "tricorn", strlen("tricorn")) == 0) {
+        return tricorn_grid;
+    }
+    else if(strncmp(argument, "multibrot", strlen("multibrot")) == 0) {
+        if(param_is_cr){
+            fprintf(stderr, "multibrot requires a degree, not constant and radius, exitting\n");
+            exit(EXIT_BAD_ARGUMENT);
+        }
+        return multibrot_grid;
+    }
+    else if(strncmp(argument, "multicorn", strlen("multicorn")) == 0) {
+        if(param_is_cr){
+            fprintf(stderr, "multicorn requires a degree, not constant and radius, exitting\n");
+            exit(EXIT_BAD_ARGUMENT);
+        }
+        return multicorn_grid;
+    }
+    else if(strncmp(argument, "burning_ship", strlen("burning_ship")) == 0) {
+        return burning_ship_grid;
+    }
+    else if(strncmp(argument, "julia", strlen("julia")) == 0) {
+        if(param_is_degree){
+            fprintf(stderr, "julia requires a constant and a radius, not a degree, exitting\n");
+            exit(EXIT_BAD_ARGUMENT);
+        }
+        return julia_grid;
+    }
+    else {
+        fprintf(stderr, "Invalid fractal type: %s, see --help for a list of supported fractals\n", argument);
+        exit(EXIT_BAD_ARGUMENT);
+    }
+}
+
+
 int main(const int argc, char *argv[]) {
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -82,6 +135,7 @@ int main(const int argc, char *argv[]) {
     bool performance = false;
 
     //degree is mutually exclusive with constant and radius
+    //this could be simplified if grid_gen_params was a struct instead of a union but ¯\_(ツ)_/¯
     bool param_is_degree = false;
     bool param_is_cr = false;
     CBASE degree = 2;
@@ -177,46 +231,8 @@ int main(const int argc, char *argv[]) {
                 param_is_cr = true;
                 break;
             case 'f':
-                if(strncmp(optarg, "mandelbrot", strlen("mandelbrot")) == 0) {
-                    fractal_name = "mandelbrot";
-                    generator = mandelbrot_grid;
-                }
-                else if(strncmp(optarg, "tricorn", strlen("tricorn")) == 0) {
-                    fractal_name = "tricorn";
-                    generator = tricorn_grid;
-                }
-                else if(strncmp(optarg, "multibrot", strlen("multibrot")) == 0) {
-                    if(param_is_cr){
-                        fprintf(stderr, "multibrot requires a degree, not constant and radius, exitting\n");
-                        exit(EXIT_BAD_ARGUMENT);
-                    }
-                    fractal_name = "multibrot";
-                    generator = multibrot_grid;
-                }
-                else if(strncmp(optarg, "multicorn", strlen("multicorn")) == 0) {
-                    if(param_is_cr){
-                        fprintf(stderr, "multicorn requires a degree, not constant and radius, exitting\n");
-                        exit(EXIT_BAD_ARGUMENT);
-                    }
-                    fractal_name = "multicorn";
-                    generator = multicorn_grid;
-                }
-                else if(strncmp(optarg, "burning_ship", strlen("burning_ship")) == 0) {
-                    fractal_name = "burning ship";
-                    generator = burning_ship_grid;
-                }
-                else if(strncmp(optarg, "julia", strlen("julia")) == 0) {
-                    if(param_is_degree){
-                        fprintf(stderr, "julia requires a constant and a radius, not a degree, exitting\n");
-                        exit(EXIT_BAD_ARGUMENT);
-                    }
-                    fractal_name = "julia";
-                    generator = julia_grid;
-                }
-                else {
-                    fprintf(stderr, "Invalid fractal type: %s, see --help for a list of supported fractals\n", optarg);
-                    exit(EXIT_BAD_ARGUMENT);
-                }
+                fractal_name = optarg;
+                generator = parse_fractal_generator(optarg, param_is_degree, param_is_cr);
                 break;
             case 'z':
                 if(sscanf(optarg, CFORMAT, &magnification) != 1){

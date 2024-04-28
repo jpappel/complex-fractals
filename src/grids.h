@@ -20,6 +20,9 @@ typedef struct {
     CBASE im;
 } complex_t;
 
+// I've gone back and forth on the size for a grid point, eventually I settled on a byte
+// ideally it should just be its own type which can be configured similarly to precision.h
+// but it does not seem worth
 typedef unsigned char byte;
 
 typedef struct {
