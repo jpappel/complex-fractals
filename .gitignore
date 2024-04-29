@@ -7,6 +7,7 @@ analysis/data/*
 # Presentation Stuff
 build/*
 *.html
+!analysis/analysis.html
 
 # Prerequisites
 *.d

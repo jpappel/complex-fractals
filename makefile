@@ -1,4 +1,4 @@
-CC := gcc
+CC := gcc-13
 CPPFLAGS := #-DEXTENDED_PRECISION
 CFLAGS := -Wall -O3 -march=native
 LDFLAGS := -lm
@@ -47,6 +47,18 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c  | $(OBJ_DIR)
 
 $(OBJ_DIR):
 	mkdir -p $@
+
+###########
+#  Tests  #
+###########
+
+examples/mandelbrot_%.grid: $(BUILD_DIR)/%-fractals
+	$< -x 100 -y 100 -o $@
+
+tests/mandelbrot: examples/mandelbrot_serial.grid examples/mandelbrot_shared.grid examples/mandelbrot_cuda.grid
+	cmp -l $< $(word 2, $^) > $@
+	cmp -l $(word 2, $^) $(word 3, $^) >> $@
+	cmp -l $(word 3, $^) $< >> $@
 
 ################
 #  Animations  #
