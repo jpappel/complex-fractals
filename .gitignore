@@ -9,6 +9,9 @@ build/*
 *.html
 !analysis/analysis.html
 
+# IDE stuff
+.vscode
+
 # Prerequisites
 *.d
 

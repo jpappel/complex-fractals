@@ -68,7 +68,7 @@ tests/mandelbrot: examples/mandelbrot_serial.grid examples/mandelbrot_shared.gri
 #  Presentation  #
 ##################
 
-presentation: presentation/presentation.html
+presentation: presentation/presentation.html analysis/analysis.html
 
 presentation/presentation.html: presentation/presentation.md
 	pandoc -t revealjs -so $@ $<
