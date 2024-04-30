@@ -25,7 +25,10 @@ all: $(addprefix $(BUILD_DIR)/, $(TARGET))
 ##############
 
 $(BUILD_DIR)/fractal-render: $(OBJ_DIR)/grids.o $(OBJ_DIR)/fractal_render.o $(OBJ_DIR)/renderers.o
-	$(CC) $(CFLAGS) $^ -o $@ -lgd
+	$(CC) $(CFLAGS) $^ -o $@ $(shell pkg-config --libs gdlib)
+
+$(OBJ_DIR)/fractal-render.o: $(SRC_DIR)/fractal-render.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(shell pkg-config --cflags gdlibs) -c -o $@ $<
 
 $(BUILD_DIR)/serial-fractals:  $(OBJ_DIR)/serial-fractals.o $(OBJ_DIR)/grids.o $(OBJ_DIR)/fractals.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)

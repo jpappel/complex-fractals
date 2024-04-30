@@ -69,6 +69,7 @@ Generates a 500x500 julia fractal grid which has a maximum of 30 iterations for 
 ## Visualizations
 
 The program `fractal-render` renders `.grid` files into txt, png's, and animated gifs.
+The renderer program requires [LibGD](https://libgd.github.io/) to be installed.
 
 ```
 Usage: fractal-render -i input.grid [-r renderer] [-o output.ext]
