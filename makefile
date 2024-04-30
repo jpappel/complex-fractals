@@ -1,4 +1,4 @@
-CC := gcc-13
+CC := gcc
 CPPFLAGS := #-DEXTENDED_PRECISION
 CFLAGS := -Wall -O3 -march=native
 LDFLAGS := -lm
@@ -24,8 +24,8 @@ all: $(addprefix $(BUILD_DIR)/, $(TARGET))
 #  Programs  #
 ##############
 
-$(BUILD_DIR)/fractal-render: $(OBJ_DIR)/grids.o $(OBJ_DIR)/fractal_render.o 
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+$(BUILD_DIR)/fractal-render: $(OBJ_DIR)/grids.o $(OBJ_DIR)/fractal_render.o $(OBJ_DIR)/renderers.o
+	$(CC) $(CFLAGS) $^ -o $@ -lgd
 
 $(BUILD_DIR)/serial-fractals:  $(OBJ_DIR)/serial-fractals.o $(OBJ_DIR)/grids.o $(OBJ_DIR)/fractals.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
@@ -51,6 +51,12 @@ $(OBJ_DIR):
 ###########
 #  Tests  #
 ###########
+
+examples/julia.png: examples/julia.grid $(BUILD_DIR)/fractal-render
+	$(BUILD_DIR)/fractal-render -i $< -r png -o $@
+
+examples/julia.grid: $(BUILD_DIR)/shared-fractals
+	$< -c 0.285+0.01i -i 255 -r 2 -x 8192 -y 8192 -o $@ -f julia
 
 examples/mandelbrot_%.grid: $(BUILD_DIR)/%-fractals
 	$< -x 100 -y 100 -o $@

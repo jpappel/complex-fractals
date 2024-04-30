@@ -142,7 +142,6 @@ CBASE complex grid_to_complex(const grid_t* grid_p, const size_t index) {
  * Resets all grid values to 0
  */
 void zoom_grid(grid_t* restrict grid, const CBASE magnification){
-    //FIXME: not impelemnted correctly
     set_grid(grid, 0);
     // const CBASE complex upper_right = grid->upper_right;
     const complex_t upper_right = grid->upper_right;
@@ -153,7 +152,7 @@ void zoom_grid(grid_t* restrict grid, const CBASE magnification){
     const CBASE inv_mag = 1 / magnification;
     const complex_t center = {
         .re = inv2 * (lower_left.re + upper_right.re),
-        .im = inv2 * (lower_left.im + lower_left.im)
+        .im = inv2 * (lower_left.im + upper_right.im)
     };
     const complex_t offset = {
         .re = inv_mag * (upper_right.re - lower_left.re),
