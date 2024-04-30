@@ -21,8 +21,7 @@ void print_help(){
            "  -r, --renderer <renderer>       the renderer to use, defaults to the text renderer\n"
            "      renderers:   txt, png, gif (TODO, with additional features)\n"
            "  -d, --delay <delay>             the delay between animation frames in 1/100 s\n"
-           "  -o, --output <output file>      the file to output the result of rendering, if not given defaults to output.<EXT>\n"
-           "                                  where <EXT> is the renderer used\n"
+           "  -o, --output <output file>      the file to output the result of rendering, if not given defaults to fractal.out\n"
            "  -v, --verbose                   verbose output\n"
            "  -h, --help                      prints this help and exits\n"
           );

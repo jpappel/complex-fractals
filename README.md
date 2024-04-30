@@ -8,7 +8,7 @@ Each version of the complex fractal generator has its own dependencies.
 The serial version should compile on all systems that support complex arithmetic.
 
 The shared version requires a compiler with [OpenMP](https://www.openmp.org/) support.
-The CUDA version requires the `nvcc` compiler and `thrust libraries`.
+The CUDA version requires the `nvcc` compiler and `thrust` libraries.
 For better performance on your machine, change the flag `-arch=sm_86` in `NVCFLAGS` in the makefile to your gpu's compute capability.
 
 ### Building
@@ -67,6 +67,38 @@ Generates a 2000x2000 burning ship fractal grid zoomed in 2x and saves it to bur
 Generates a 500x500 julia fractal grid which has a maximum of 30 iterations for $c = 0.285 + 0.01i$ and a radius of 20 to julia.grid.
 
 ## Visualizations
+
+The program `fractal-render` renders `.grid` files into txt, png's, and animated gifs.
+
+```
+Usage: fractal-render -i input.grid [-r renderer] [-o output.ext]
+Options:
+  -i, --input <input grid>        the grid to be rendered, if the file name is '-' reads from stdin
+  -r, --renderer <renderer>       the renderer to use, defaults to the text renderer
+      renderers:   txt, png, gif (TODO, with additional features)
+  -d, --delay <delay>             the delay between animation frames in 1/100 s
+  -o, --output <output file>      the file to output the result of rendering, if not given defaults to fractal.out.
+  -v, --verbose                   verbose output
+  -h, --help                      prints this help and exits
+```
+
+### Building
+
+To build simply run
+
+```bash
+make
+```
+
+### Examples
+
+Some example visualizations are provided in `examples`, they can be regenerated with
+
+```bash
+make examples/julia.png
+make examples/multicorn.gif
+```
+
 
 ## Presentation
 

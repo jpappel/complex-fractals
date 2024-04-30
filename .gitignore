@@ -8,6 +8,7 @@ analysis/data/*
 build/*
 *.html
 !analysis/analysis.html
+!presentation/presentation.html
 
 # IDE stuff
 .vscode

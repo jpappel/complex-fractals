@@ -51,10 +51,11 @@ gdImagePtr converter(const grid_t* grid){
     gdImagePtr img = gdImageCreate(width, height);
     int colors[256];
     for(size_t i = 0; i < 255; i++){
-        colors[i] = gdImageColorAllocate(img, 0, i, i/2);
+        colors[i] = gdImageColorAllocate(img, 0, 255-i, (255-i)/2);
     }
 
     colors[255] = gdImageColorAllocate(img, 0, 0, 0);
+
     for(size_t y = 0; y < height; y++){
         for(size_t x = 0; x < width; x++){
             byte iteration = data[y * width + x];
@@ -82,7 +83,7 @@ void render_gif(FILE* output, const renderer_params* params){
     gdImagePtr imgs[size];
 
     imgs[0] = converter(grids[0]);
-    gdImageGifAnimBegin(imgs[0], output, 1, -1);
+    gdImageGifAnimBegin(imgs[0], output, 1, 0);
     gdImageGifAnimAdd(imgs[0], output, 0, 0, 0, delay, 1, NULL);
 
     for(size_t i = 1; i < size; i++){

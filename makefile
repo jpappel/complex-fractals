@@ -48,18 +48,30 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c  | $(OBJ_DIR)
 $(OBJ_DIR):
 	mkdir -p $@
 
-###########
-#  Tests  #
-###########
+####################
+#  Tests/Examples  #
+###################
 
 examples/julia.png: examples/julia.grid $(BUILD_DIR)/fractal-render
 	$(BUILD_DIR)/fractal-render -i $< -r png -o $@
 
+examples/multicorn.gif: examples/multicorn_framelist
+	$(BUILD_DIR)/fractal-render -i $< -d 80 -r gif -o $@
+
+examples/multicorn_framelist: examples/multicorn_2.grid examples/multicorn_3.grid examples/multicorn_4.grid examples/multicorn_5.grid
+	@echo $< > $@
+	@echo $(word 2, $^) >> $@
+	@echo $(word 3, $^) >> $@
+	@echo $(word 4, $^) >> $@
+
 examples/julia.grid: $(BUILD_DIR)/shared-fractals
-	$< -c 0.285+0.01i -i 255 -r 2 -x 8192 -y 8192 -o $@ -f julia
+	$< -c 0.285+0.01i -i 155 -r 2 -x 8192 -y 8192 -o $@ -f julia
 
 examples/mandelbrot_%.grid: $(BUILD_DIR)/%-fractals
 	$< -x 100 -y 100 -o $@
+
+examples/multicorn_%.grid: $(BUILD_DIR)/shared-fractals
+	$< -x1000 -y1000 -i50 -d $* -o $@ -f multicorn
 
 tests/mandelbrot: examples/mandelbrot_serial.grid examples/mandelbrot_shared.grid examples/mandelbrot_cuda.grid
 	cmp -l $< $(word 2, $^) > $@

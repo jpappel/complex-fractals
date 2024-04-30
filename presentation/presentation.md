@@ -139,6 +139,8 @@ The Mandelbrot set is a fractal in the complex plane
 
 ## Mandelbrot
 
+[Image](../examples/mandelbrot.png)
+
 ::: notes
 
 * when mandelbrot initially tried to have this printed, the printers kept removing the "dust" thinking it was an error in their printing process
@@ -147,19 +149,24 @@ The Mandelbrot set is a fractal in the complex plane
 
 ## Tricorn
 
+[Image](../examples/tricorn.png)
+
 ## Burning Ship
+
+[Image](../examples/burning_ship.png)
 
 ## Multibrot
 
+[Image](../examples/multibrot.png)
+
 ## Multicorn
+
+[GIF](../examples/multicorn.gif)
+
 
 ## Julia
 
-## Serial Animation
-
-## Shared Animation
-
-## CUDA Animation
+[Image](../examples/julia.png)
 
 # Analysis
 
